@@ -1,0 +1,20 @@
+[workspace]
+members = [
+    "crates/backend",
+    "crates/common",
+    "crates/frontend",
+    "crates/interface",
+    "crates/interface-derive",
+    "crates/interface-traits",
+]
+resolver = "2"
+
+[workspace.dependencies]
+common = { path = "crates/common" }
+interface = { path = "crates/interface" }
+
+anyhow = { version = "1.0", features = ["backtrace", "std"] }
+candid = "0.10.13"
+hexaurl = { git = "https://github.com/perforate-org/hexaurl.git", features = ["candid"]}
+ic-stable-structures = "0.6.7"
+serde = { version = "1.0", features = ["derive"] }

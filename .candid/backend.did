@@ -1,0 +1,6 @@
+type Result = variant { Ok : UserProfileResponse; Err : text };
+type UserProfileResponse = record { name : text };
+service : () -> {
+  get_author_profile : (blob) -> (Result) query;
+  get_author_profile_with_str : (text) -> (Result) query;
+}

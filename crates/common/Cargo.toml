@@ -1,0 +1,22 @@
+[package]
+publish = false
+name = "common"
+version = "0.0.1"
+edition = "2021"
+
+[dependencies]
+candid.workspace = true
+dotenvy_macro = "0.15.7"
+hexaurl.workspace = true
+derive_more = { version = "2", features = [
+    "as_ref",
+    "display",
+    "from",
+    "into",
+] }
+ic-stable-structures = { workspace = true, optional = true }
+serde.workspace = true
+thiserror = "2.0.11"
+
+[features]
+ic-stable = ["hexaurl/ic-stable", "ic-stable-structures"]

@@ -1,0 +1,18 @@
+[build]
+target = "crates/frontend/index.html"
+dist = "dist/frontend"
+
+[watch]
+watch = ["crates/frontend", "crates/common", "crates/interface"]
+ignore = [
+    "crates/frontend/style/output.css",
+    "crates/frontend/public",
+]
+
+[[hooks]]
+stage = "pre_build"
+command = "sh"
+command_arguments = [
+    "-c",
+    "npx @tailwindcss/cli -i crates/frontend/style/input.css -o crates/frontend/style/output.css --minify",
+]

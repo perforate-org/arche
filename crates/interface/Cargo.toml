@@ -1,0 +1,13 @@
+[package]
+publish = false
+name = "interface"
+version = "0.0.1"
+edition = "2021"
+
+[dependencies]
+common.workspace = true
+interface-traits = { path = "../interface-traits" }
+
+candid.workspace = true
+derive_more = "2.0"
+serde.workspace = true
