@@ -384,9 +384,11 @@ dependencies = [
  "derive_more",
  "dotenvy_macro",
  "hexaurl",
+ "ic-cdk",
  "ic-stable-structures",
  "serde",
  "thiserror 2.0.11",
+ "wasm-timer",
 ]
 
 [[package]]

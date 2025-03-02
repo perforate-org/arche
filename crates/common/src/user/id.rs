@@ -1,7 +1,7 @@
 use candid::CandidType;
 use derive_more::{AsRef, Display, From, Into};
 use hexaurl::HexaUrl;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 /// Wrapper for user ids.
 #[derive(

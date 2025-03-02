@@ -1,6 +1,6 @@
-use crate::{Request, Response, CandidType};
+use crate::{CandidType, Request, Response};
 use common::UserId;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Response, CandidType, Serialize, Deserialize, Debug)]
 pub struct UserProfileResponse {

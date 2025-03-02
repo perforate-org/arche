@@ -1,18 +1,67 @@
 use candid::Principal;
-use common::{user::{UserId, UserPrincipal}, post::{PostId, PostKey}};
-use ic_cdk::{api::{call::CallResult, caller, print}, storage};
+use common::{
+    post::{PostId, PostKey},
+    user::{UserId, UserPrincipal},
+};
+use ic_cdk::{
+    api::{call::CallResult, caller, print},
+    storage,
+};
 use ic_cdk_macros::*;
 use ic_stable_structures::{
     memory_manager::{MemoryId, MemoryManager, VirtualMemory},
     DefaultMemoryImpl, StableBTreeMap, StableLog,
 };
+use interface::article::{
+    AddCoAuthorRequest, AddCoAuthorResponse, CreateArticleRequest, CreateArticleResponse,
+    GetArticleRequest, GetArticleResponse, ListArticlesRequest, ListArticlesResponse,
+    PublishArticleRequest, PublishArticleResponse, SearchArticlesRequest, SearchArticlesResponse,
+    UpdateArticleRequest, UpdateArticleResponse,
+};
 use std::{cell::RefCell, collections::HashMap};
 
 mod log;
+mod post;
 mod user;
 use user::{User, UserV1};
 
 type Memory = VirtualMemory<DefaultMemoryImpl>;
+
+// Article management functions
+#[update]
+fn create_article(request: CreateArticleRequest) -> CreateArticleResponse {
+    post::create_article(caller(), request)
+}
+
+#[update]
+fn update_article(request: UpdateArticleRequest) -> UpdateArticleResponse {
+    post::update_article(caller(), request)
+}
+
+#[update]
+fn publish_article(request: PublishArticleRequest) -> PublishArticleResponse {
+    post::publish_article(caller(), request)
+}
+
+#[query]
+fn get_article(request: GetArticleRequest) -> GetArticleResponse {
+    post::get_article(caller(), request)
+}
+
+#[query]
+fn list_articles(request: ListArticlesRequest) -> ListArticlesResponse {
+    post::list_articles(caller(), request)
+}
+
+#[update]
+fn add_co_author(request: AddCoAuthorRequest) -> AddCoAuthorResponse {
+    post::add_co_author(caller(), request)
+}
+
+#[query]
+fn search_articles(request: SearchArticlesRequest) -> SearchArticlesResponse {
+    post::search_articles(caller(), request)
+}
 
 thread_local! {
     static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> =
@@ -55,16 +104,14 @@ thread_local! {
 }
 
 fn get_user_principal(user_id: &UserId) -> Option<UserPrincipal> {
-    USER_PRINCIPALS.with(|map| {
-        map.borrow().get(user_id).copied()
-    })
+    USER_PRINCIPALS.with(|map| map.borrow().get(user_id).copied())
 }
 
 fn change_user_id(new_id: UserId) -> Result<UserId, String> {
     let caller = caller().into();
-    let old_id = USER_IDS.with(|map| {
-        map.borrow().get(&caller)
-    }).ok_or_else(|| format!("User (Principal: {}) does not exist", caller))?;
+    let old_id = USER_IDS
+        .with(|map| map.borrow().get(&caller))
+        .ok_or_else(|| format!("User (Principal: {}) does not exist", caller))?;
 
     // First check if the new ID already exists
     if USER_PRINCIPALS.with(|map| map.borrow().contains_key(&new_id)) {
@@ -135,7 +182,11 @@ fn pre_upgrade() {
         Ok(_) => (),
         Err(e) => {
             ic_cdk::print(format!("Failed to save USER_PRINCIPALS: {:?}", e));
-            let _ = log::error("Failed to save USER_PRINCIPALS", &format!("{:?}", e), "pre_upgrade");
+            let _ = log::error(
+                "Failed to save USER_PRINCIPALS",
+                &format!("{:?}", e),
+                "pre_upgrade",
+            );
         }
     }
 }
@@ -150,7 +201,7 @@ fn post_upgrade() {
                 *map.borrow_mut() = old_user_principals;
             });
             ic_cdk::print("Successfully restored USER_PRINCIPALS from stable storage");
-        },
+        }
         Err(e) => {
             ic_cdk::print(format!("Failed to restore USER_PRINCIPALS: {:?}", e));
             // Initialize with empty map to ensure system can still function
@@ -181,11 +232,11 @@ fn get_author_profile(user_id: UserId) -> Result<interface::user::UserProfileRes
 
     // Attempt to obtain the user's record from the USERS map.
     let maybe_name = USERS.with(|map| {
-        map.borrow().get(&principal).map(|user_entry| {
-            match user_entry {
+        map.borrow()
+            .get(&principal)
+            .map(|user_entry| match user_entry {
                 User::V1(user_data) => user_data.name.clone(),
-            }
-        })
+            })
     });
 
     // Check if the user's name was found; if not, return an error.
@@ -195,7 +246,9 @@ fn get_author_profile(user_id: UserId) -> Result<interface::user::UserProfileRes
 }
 
 #[query]
-fn get_author_profile_with_str(user_id: String) -> Result<interface::user::UserProfileResponse, String> {
+fn get_author_profile_with_str(
+    user_id: String,
+) -> Result<interface::user::UserProfileResponse, String> {
     // Convert the user_id string to an UserId.
     let user_id = UserId::new(&user_id).map_err(|_| format!("Invalid user ID: {}", user_id))?;
 

@@ -1,6 +1,6 @@
-use candid::{Principal, CandidType};
-use serde::{Serialize, Deserialize};
+use candid::{CandidType, Principal};
 use derive_more::{AsRef, Display, From, Into};
+use serde::{Deserialize, Serialize};
 
 #[derive(
     CandidType,
@@ -20,7 +20,6 @@ use derive_more::{AsRef, Display, From, Into};
     Into,
 )]
 pub struct UserPrincipal(Principal);
-
 
 #[cfg(feature = "ic-stable")]
 mod ic_stable {

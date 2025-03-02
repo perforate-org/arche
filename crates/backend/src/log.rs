@@ -1,10 +1,10 @@
 #![allow(dead_code)]
 
-use candid::{CandidType, Encode, Decode, Deserialize, Principal};
-use ic_cdk::api::print;
-use ic_stable_structures::storable::{Storable, Bound};
-use std::borrow::Cow;
 use crate::LOG;
+use candid::{CandidType, Decode, Deserialize, Encode, Principal};
+use ic_cdk::api::print;
+use ic_stable_structures::storable::{Bound, Storable};
+use std::borrow::Cow;
 
 /// Appends a log entry to the global log storage
 ///

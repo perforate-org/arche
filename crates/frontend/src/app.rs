@@ -3,12 +3,12 @@ use leptos_meta::*;
 use leptos_router::components::{ParentRoute, Route, Router, Routes, RoutingProgress};
 use leptos_router_macro::path;
 
+mod author;
 pub mod fallback;
 mod home;
-mod author;
 
-use home::Home;
 use author::Author;
+use home::Home;
 
 #[component]
 pub fn App() -> impl IntoView {

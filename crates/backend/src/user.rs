@@ -1,4 +1,4 @@
-use candid::{CandidType, Deserialize, Decode, Encode};
+use candid::{CandidType, Decode, Deserialize, Encode};
 use ic_stable_structures::storable::{Bound, Storable};
 use std::borrow::Cow;
 

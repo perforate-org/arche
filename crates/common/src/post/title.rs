@@ -1,6 +1,6 @@
-use derive_more::{AsRef, Display};
 use candid::CandidType;
-use serde::{Serialize, Deserialize};
+use derive_more::{AsRef, Display};
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 /// Error returned when creating an invalid post title
@@ -16,8 +16,7 @@ pub enum PostTitleError {
 /// A strongly typed wrapper for post titles
 ///
 /// Post titles must not be empty and must be less than 100 characters.
-#[derive(CandidType, Clone, Serialize, Deserialize, Debug, PartialEq, Eq, Hash)]
-#[derive(AsRef, Display)]
+#[derive(CandidType, Clone, Serialize, Deserialize, Debug, PartialEq, Eq, Hash, AsRef, Display)]
 #[as_ref(forward)]
 pub struct PostTitle(String);
 

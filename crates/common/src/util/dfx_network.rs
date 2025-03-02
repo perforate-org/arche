@@ -7,9 +7,7 @@ pub enum DfxNetwork {
     Local,
 }
 
-pub static DFX_NETWORK: LazyLock<DfxNetwork> = LazyLock::new(|| {
-    dfx_network()
-});
+pub static DFX_NETWORK: LazyLock<DfxNetwork> = LazyLock::new(|| dfx_network());
 
 fn dfx_network() -> DfxNetwork {
     let mut dfx_network = dotenv!("DFX_NETWORK").to_string();

@@ -1,10 +1,13 @@
+use crate::{GlobalState, GlobalStateStoreFields, Store};
 use candid::{Decode, Encode};
-use common::util::{dfx_network::{DfxNetwork, DFX_NETWORK}, canister_id::BACKEND};
-use crate::{Store, GlobalState, GlobalStateStoreFields};
+use common::util::{
+    canister_id::BACKEND,
+    dfx_network::{DfxNetwork, DFX_NETWORK},
+};
 use ic_agent::{Agent, Identity};
 use interface::{Request, Response};
 use leptos::prelude::*;
-use std::{time::Duration, sync::Arc};
+use std::{sync::Arc, time::Duration};
 
 pub const TIMEOUT: Duration = Duration::from_secs(60 * 5);
 
@@ -18,7 +21,9 @@ pub struct Service {
 impl Service {
     pub async fn with(identity: Arc<dyn Identity>) -> Self {
         // Asynchronously create an agent to interact with the IC network.
-        Self { agent: Some(create_agent(identity).await) }
+        Self {
+            agent: Some(create_agent(identity).await),
+        }
     }
 
     /// Initiates a query call to the backend canister.
@@ -27,7 +32,11 @@ impl Service {
     /// Rs: The response type, implementing the Response trait.
     ///
     /// The provided method is the name of the canister method to call.
-    pub async fn query<Rq: Request, Rs: Response>(&mut self, method: &'static str, input: &Rq) -> Rs {
+    pub async fn query<Rq: Request, Rs: Response>(
+        &mut self,
+        method: &'static str,
+        input: &Rq,
+    ) -> Rs {
         if self.agent.is_none() {
             let state = expect_context::<Store<GlobalState>>();
             let identity = state.identity().get_untracked();
@@ -39,7 +48,8 @@ impl Service {
         let arg = Encode!(&input).expect("Failed to encode request using Candid");
 
         // Perform the query call to the backend canister.
-        let res = self.agent
+        let res = self
+            .agent
             .as_ref()
             .unwrap()
             .query(&BACKEND, method)
@@ -62,7 +72,11 @@ impl Service {
     /// Rs: The response type, implementing the Response trait.
     ///
     /// The provided method is the name of the canister method to call.
-    pub async fn update<Rq: Request, Rs: Response>(&mut self, method: &'static str, input: &Rq) -> Rs {
+    pub async fn update<Rq: Request, Rs: Response>(
+        &mut self,
+        method: &'static str,
+        input: &Rq,
+    ) -> Rs {
         if self.agent.is_none() {
             let state = expect_context::<Store<GlobalState>>();
             let identity = state.identity().get_untracked();
@@ -74,7 +88,8 @@ impl Service {
         let arg = Encode!(&input).expect("Failed to encode request using Candid");
 
         // Perform the update call to the backend canister.
-        let res = self.agent
+        let res = self
+            .agent
             .as_ref()
             .unwrap()
             .update(&BACKEND, method)
@@ -100,9 +115,7 @@ async fn create_agent(identity: Arc<dyn Identity>) -> Agent {
             let port = 4943;
             format!("http://127.0.0.1:{}", port)
         }
-        DfxNetwork::Ic => {
-            "https://ic0.app".to_string()
-        }
+        DfxNetwork::Ic => "https://ic0.app".to_string(),
     };
 
     let agent = Agent::builder()
@@ -113,10 +126,7 @@ async fn create_agent(identity: Arc<dyn Identity>) -> Agent {
         .unwrap();
 
     if dfx_network == DfxNetwork::Local {
-        agent
-            .fetch_root_key()
-            .await
-            .unwrap();
+        agent.fetch_root_key().await.unwrap();
     }
 
     agent

@@ -10,7 +10,7 @@ mod app;
 mod components;
 mod context;
 
-use app::{App, fallback::Fallback};
+use app::{fallback::Fallback, App};
 use context::service::Service;
 
 #[derive(Clone, Store)]

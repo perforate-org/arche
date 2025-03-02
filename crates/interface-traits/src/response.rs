@@ -1,9 +1,12 @@
 use candid::{CandidType, Principal};
-use serde::{Serialize, Deserialize};
-use common::{UserId, PostId};
+use common::{PostId, UserId};
 pub use interface_derive::Response;
+use serde::{Deserialize, Serialize};
 
-pub trait Response: CandidType + Send + Sync + Serialize + for<'de> Deserialize<'de> + 'static {}
+pub trait Response:
+    CandidType + Send + Sync + Serialize + for<'de> Deserialize<'de> + 'static
+{
+}
 
 impl Response for () {}
 impl Response for i8 {}
@@ -56,10 +59,81 @@ impl<A: Response, B: Response> Response for (A, B) {}
 impl<A: Response, B: Response, C: Response> Response for (A, B, C) {}
 impl<A: Response, B: Response, C: Response, D: Response> Response for (A, B, C, D) {}
 impl<A: Response, B: Response, C: Response, D: Response, E: Response> Response for (A, B, C, D, E) {}
-impl<A: Response, B: Response, C: Response, D: Response, E: Response, F: Response> Response for (A, B, C, D, E, F) {}
-impl<A: Response, B: Response, C: Response, D: Response, E: Response, F: Response, G: Response> Response for (A, B, C, D, E, F, G) {}
-impl<A: Response, B: Response, C: Response, D: Response, E: Response, F: Response, G: Response, H: Response> Response for (A, B, C, D, E, F, G, H) {}
-impl<A: Response, B: Response, C: Response, D: Response, E: Response, F: Response, G: Response, H: Response, I: Response> Response for (A, B, C, D, E, F, G, H, I) {}
-impl<A: Response, B: Response, C: Response, D: Response, E: Response, F: Response, G: Response, H: Response, I: Response, J: Response> Response for (A, B, C, D, E, F, G, H, I, J) {}
-impl<A: Response, B: Response, C: Response, D: Response, E: Response, F: Response, G: Response, H: Response, I: Response, J: Response, K: Response> Response for (A, B, C, D, E, F, G, H, I, J, K) {}
-impl<A: Response, B: Response, C: Response, D: Response, E: Response, F: Response, G: Response, H: Response, I: Response, J: Response, K: Response, L: Response> Response for (A, B, C, D, E, F, G, H, I, J, K, L) {}
+impl<A: Response, B: Response, C: Response, D: Response, E: Response, F: Response> Response
+    for (A, B, C, D, E, F)
+{
+}
+impl<A: Response, B: Response, C: Response, D: Response, E: Response, F: Response, G: Response>
+    Response for (A, B, C, D, E, F, G)
+{
+}
+impl<
+        A: Response,
+        B: Response,
+        C: Response,
+        D: Response,
+        E: Response,
+        F: Response,
+        G: Response,
+        H: Response,
+    > Response for (A, B, C, D, E, F, G, H)
+{
+}
+impl<
+        A: Response,
+        B: Response,
+        C: Response,
+        D: Response,
+        E: Response,
+        F: Response,
+        G: Response,
+        H: Response,
+        I: Response,
+    > Response for (A, B, C, D, E, F, G, H, I)
+{
+}
+impl<
+        A: Response,
+        B: Response,
+        C: Response,
+        D: Response,
+        E: Response,
+        F: Response,
+        G: Response,
+        H: Response,
+        I: Response,
+        J: Response,
+    > Response for (A, B, C, D, E, F, G, H, I, J)
+{
+}
+impl<
+        A: Response,
+        B: Response,
+        C: Response,
+        D: Response,
+        E: Response,
+        F: Response,
+        G: Response,
+        H: Response,
+        I: Response,
+        J: Response,
+        K: Response,
+    > Response for (A, B, C, D, E, F, G, H, I, J, K)
+{
+}
+impl<
+        A: Response,
+        B: Response,
+        C: Response,
+        D: Response,
+        E: Response,
+        F: Response,
+        G: Response,
+        H: Response,
+        I: Response,
+        J: Response,
+        K: Response,
+        L: Response,
+    > Response for (A, B, C, D, E, F, G, H, I, J, K, L)
+{
+}

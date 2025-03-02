@@ -1,11 +1,12 @@
+use crate::{GlobalState, GlobalStateStoreFields, Store};
 use common::UserId;
-use crate::{Store, GlobalState, GlobalStateStoreFields};
 use leptos::{html::audio, prelude::*};
 use leptos_meta::*;
 use leptos_router::{
     components::{ParentRoute, Route, Routes},
     hooks::use_params,
-    params::Params, MatchNestedRoutes,
+    params::Params,
+    MatchNestedRoutes,
 };
 use leptos_router_macro::path;
 
@@ -49,16 +50,15 @@ pub fn Author() -> impl IntoView {
         })
     };
 
-    let profile = LocalResource::new(
-        move || {
-            async move {
-                service.get().query::<UserId, Result<interface::user::UserProfileResponse, String>>(
-                    "get_author_profile",
-                    &author_id(),
-                ).await
-            }
-        }
-    );
+    let profile = LocalResource::new(move || async move {
+        service
+            .get()
+            .query::<UserId, Result<interface::user::UserProfileResponse, String>>(
+                "get_author_profile",
+                &author_id(),
+            )
+            .await
+    });
 
     view! {
         <Suspense fallback=move || view! { <div>"Loading..."</div> }>

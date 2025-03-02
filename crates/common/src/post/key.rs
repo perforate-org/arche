@@ -1,6 +1,6 @@
 use candid::CandidType;
-use serde::{Serialize, Deserialize};
 use derive_more::{AsRef, Display, From, Into};
+use serde::{Deserialize, Serialize};
 
 /// Wrapper for post keys.
 #[derive(
@@ -15,8 +15,11 @@ use derive_more::{AsRef, Display, From, Into};
     PartialEq,
     PartialOrd,
     Ord,
+    Display,
+    AsRef,
+    From,
+    Into,
 )]
-#[derive(Display, AsRef, From, Into)]
 #[as_ref(forward)]
 pub struct PostKey(u64);
 
