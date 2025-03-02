@@ -3,7 +3,7 @@ use derive_more::{AsRef, Display, From, Into};
 use hexaurl::HexaUrl;
 use serde::{Deserialize, Serialize};
 
-/// Wrapper for post ids.
+/// Wrapper for article ids.
 #[derive(
     CandidType,
     Clone,
@@ -22,21 +22,21 @@ use serde::{Deserialize, Serialize};
     Into,
 )]
 #[as_ref(forward)]
-pub struct PostId(HexaUrl);
+pub struct ArticleId(HexaUrl);
 
-impl PostId {
-    /// Creates a new PostId from a string
+impl ArticleId {
+    /// Creates a new ArticleId from a string
     pub fn new(id: &str) -> Result<Self, &'static str> {
-        Ok(Self(HexaUrl::new(id).map_err(|_| "Invalid post ID")?))
+        Ok(Self(HexaUrl::new(id).map_err(|_| "Invalid article ID")?))
     }
 
-    /// Generates a new unique PostId
+    /// Generates a new unique ArticleId
     pub fn generate() -> Self {
         let now = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap()
             .as_nanos() as u64;
-        Self(HexaUrl::new(&format!("post_{}", now)).unwrap())
+        Self(HexaUrl::new(&format!("article_{}", now)).unwrap())
     }
 }
 
@@ -46,13 +46,13 @@ mod ic_stable {
     use ic_stable_structures::storable::{Bound, Storable};
     use std::borrow::Cow;
 
-    impl Storable for PostId {
+    impl Storable for ArticleId {
         fn to_bytes(&self) -> Cow<[u8]> {
             self.0.to_bytes()
         }
 
         fn from_bytes(bytes: Cow<[u8]>) -> Self {
-            PostId(HexaUrl::from_bytes(bytes))
+            ArticleId(HexaUrl::from_bytes(bytes))
         }
 
         const BOUND: Bound = HexaUrl::BOUND;

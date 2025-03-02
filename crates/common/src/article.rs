@@ -1,9 +1,9 @@
 mod id;
 mod key;
 mod title;
-pub use id::PostId;
-pub use key::PostKey;
-pub use title::PostTitle;
+pub use id::ArticleId;
+pub use key::ArticleKey;
+pub use title::ArticleTitle;
 
 use crate::{util::time::now, UserId};
 use candid::{CandidType, Principal};
@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 
 /// Status of an article
 #[derive(CandidType, Clone, Serialize, Deserialize, Debug, PartialEq)]
-pub enum PostStatus {
+pub enum ArticleStatus {
     /// Draft article, only visible to authors
     Draft,
     /// Published article, visible to all
@@ -24,7 +24,7 @@ pub enum PostStatus {
 
 /// Category for technical articles
 #[derive(CandidType, Clone, Serialize, Deserialize, Debug, PartialEq)]
-pub enum PostCategory {
+pub enum ArticleCategory {
     Programming,
     SystemDesign,
     DevOps,
@@ -36,26 +36,26 @@ pub enum PostCategory {
 
 /// Represents a technical article in the system
 #[derive(CandidType, Clone, Serialize, Deserialize, Debug)]
-pub struct Post {
-    /// The primary author of the post
+pub struct Article {
+    /// The primary author of the article
     pub primary_author: UserId,
-    /// Co-authors of the post, if any
+    /// Co-authors of the article, if any
     pub co_authors: Vec<UserId>,
-    /// Title of the post
-    pub title: PostTitle,
+    /// Title of the article
+    pub title: ArticleTitle,
     /// Brief summary of the article
     pub summary: String,
     /// Main content of the article in Markdown format
     pub content: String,
     /// Categories this article belongs to
-    pub categories: Vec<PostCategory>,
+    pub categories: Vec<ArticleCategory>,
     /// Tags for better searchability
     pub tags: Vec<String>,
     /// Current status of the article
-    pub status: PostStatus,
-    /// When the post was created
+    pub status: ArticleStatus,
+    /// When the article was created
     pub created_at: u64,
-    /// When the post was last updated
+    /// When the article was last updated
     pub updated_at: u64,
     /// Number of views
     pub view_count: u64,
@@ -69,7 +69,7 @@ mod ic_stable {
     use ic_stable_structures::storable::{Bound, Storable};
     use std::borrow::Cow;
 
-    impl Storable for Post {
+    impl Storable for Article {
         const BOUND: Bound = Bound::Unbounded;
         fn to_bytes(&self) -> std::borrow::Cow<[u8]> {
             Cow::Owned(candid::encode_one(self).unwrap())
@@ -87,14 +87,14 @@ impl From<Principal> for UserId {
     }
 }
 
-impl Post {
-    /// Creates a new draft post
+impl Article {
+    /// Creates a new draft article
     pub fn new_draft(
         primary_author: UserId,
-        title: PostTitle,
+        title: ArticleTitle,
         summary: String,
         content: String,
-        categories: Vec<PostCategory>,
+        categories: Vec<ArticleCategory>,
         tags: Vec<String>,
     ) -> Self {
         let now = now();
@@ -107,7 +107,7 @@ impl Post {
             content,
             categories,
             tags,
-            status: PostStatus::Draft,
+            status: ArticleStatus::Draft,
             created_at: now,
             updated_at: now,
             view_count: 0,
@@ -117,10 +117,10 @@ impl Post {
 
     /// Publishes a draft article
     pub fn publish(&mut self) -> Result<(), &'static str> {
-        if self.status != PostStatus::Draft {
+        if self.status != ArticleStatus::Draft {
             return Err("Only draft articles can be published");
         }
-        self.status = PostStatus::Published;
+        self.status = ArticleStatus::Published;
         self.updated_at = now();
         Ok(())
     }

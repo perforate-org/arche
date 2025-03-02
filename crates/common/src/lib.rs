@@ -1,6 +1,6 @@
-pub mod post;
+pub mod article;
 pub mod user;
 pub mod util;
 
-pub use post::*;
+pub use article::*;
 pub use user::*;

@@ -1,5 +1,5 @@
 use candid::{CandidType, Principal};
-use common::{PostId, UserId};
+use common::{ArticleId, UserId};
 pub use interface_derive::Response;
 use serde::{Deserialize, Serialize};
 
@@ -25,7 +25,7 @@ impl Response for String {}
 
 impl Response for Principal {}
 impl Response for UserId {}
-impl Response for PostId {}
+impl Response for ArticleId {}
 
 impl<T: Response> Response for [T; 0] {}
 impl<T: Response> Response for [T; 1] {}

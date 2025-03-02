@@ -1,6 +1,6 @@
 use candid::Principal;
 use common::{
-    post::{PostId, PostKey},
+    article::{ArticleId, ArticleKey},
     user::{UserId, UserPrincipal},
 };
 use ic_cdk::{
@@ -21,7 +21,7 @@ use interface::article::{
 use std::{cell::RefCell, collections::HashMap};
 
 mod log;
-mod post;
+mod article;
 mod user;
 use user::{User, UserV1};
 
@@ -30,37 +30,37 @@ type Memory = VirtualMemory<DefaultMemoryImpl>;
 // Article management functions
 #[update]
 fn create_article(request: CreateArticleRequest) -> CreateArticleResponse {
-    post::create_article(caller(), request)
+    article::create_article(caller(), request)
 }
 
 #[update]
 fn update_article(request: UpdateArticleRequest) -> UpdateArticleResponse {
-    post::update_article(caller(), request)
+    article::update_article(caller(), request)
 }
 
 #[update]
 fn publish_article(request: PublishArticleRequest) -> PublishArticleResponse {
-    post::publish_article(caller(), request)
+    article::publish_article(caller(), request)
 }
 
 #[query]
 fn get_article(request: GetArticleRequest) -> GetArticleResponse {
-    post::get_article(caller(), request)
+    article::get_article(caller(), request)
 }
 
 #[query]
 fn list_articles(request: ListArticlesRequest) -> ListArticlesResponse {
-    post::list_articles(caller(), request)
+    article::list_articles(caller(), request)
 }
 
 #[update]
 fn add_co_author(request: AddCoAuthorRequest) -> AddCoAuthorResponse {
-    post::add_co_author(caller(), request)
+    article::add_co_author(caller(), request)
 }
 
 #[query]
 fn search_articles(request: SearchArticlesRequest) -> SearchArticlesResponse {
-    post::search_articles(caller(), request)
+    article::search_articles(caller(), request)
 }
 
 thread_local! {

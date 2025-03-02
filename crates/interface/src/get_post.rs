@@ -1,15 +1,15 @@
 use crate::{Request, Response, CandidType};
-use common::{UserId, PostId};
+use common::{UserId, ArticleId};
 use serde::{Serialize, Deserialize};
 
 #[derive(Request, Clone, CandidType, Debug)]
-pub struct GetPostRequest {
+pub struct GetArticleRequest {
     user: UserId,
-    post: PostId,
+    article: ArticleId,
 }
 
 #[derive(Response, CandidType, Serialize, Deserialize, Debug)]
-pub struct GetPostResponse {
+pub struct GetArticleResponse {
     user: UserId,
-    post: PostId,
+    article: ArticleId,
 }

@@ -4,6 +4,6 @@ use leptos_router::components::{ParentRoute, Route, Router, Routes, RoutingProgr
 use leptos_router_macro::path;
 
 #[component]
-pub fn PostList() -> impl IntoView {
+pub fn ArticleList() -> impl IntoView {
     view! {}
 }

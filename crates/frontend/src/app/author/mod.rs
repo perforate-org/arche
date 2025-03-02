@@ -10,10 +10,10 @@ use leptos_router::{
 };
 use leptos_router_macro::path;
 
-mod post;
-mod post_list;
+mod article;
+mod article_list;
 
-use post_list::PostList;
+use article_list::ArticleList;
 
 #[component]
 pub fn AuthorRoute() -> impl MatchNestedRoutes + Clone {

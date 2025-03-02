@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use candid::Principal;
-use common::{Post, PostCategory, PostId, PostStatus, PostTitle, UserId};
+use common::{Article, ArticleCategory, ArticleId, ArticleStatus, ArticleTitle, UserId};
 use ic_stable_structures::{
     btreemap::BTreeMap,
     memory_manager::{MemoryId, MemoryManager, VirtualMemory},
@@ -34,7 +34,7 @@ thread_local! {
         MemoryManager::init(DefaultMemoryImpl::default())
     );
 
-    static ARTICLES: RefCell<BTreeMap<PostId, Post, Memory>> = RefCell::new(
+    static ARTICLES: RefCell<BTreeMap<ArticleId, Article, Memory>> = RefCell::new(
         BTreeMap::init(
             MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(0)))
         )
@@ -43,10 +43,10 @@ thread_local! {
 
 pub fn create_article(caller: Principal, request: CreateArticleRequest) -> CreateArticleResponse {
     let user_id = UserId::from(caller);
-    let post_id = PostId::generate();
-    let title = PostTitle::new(&request.title).expect("Invalid title");
+    let article_id = ArticleId::generate();
+    let title = ArticleTitle::new(&request.title).expect("Invalid title");
 
-    let article = Post::new_draft(
+    let article = Article::new_draft(
         user_id,
         title,
         request.summary,
@@ -56,17 +56,17 @@ pub fn create_article(caller: Principal, request: CreateArticleRequest) -> Creat
     );
 
     ARTICLES.with(|articles| {
-        articles.borrow_mut().insert(post_id.clone(), article);
+        articles.borrow_mut().insert(article_id.clone(), article);
     });
 
-    CreateArticleResponse { post_id }
+    CreateArticleResponse { article_id }
 }
 
 pub fn update_article(caller: Principal, request: UpdateArticleRequest) -> UpdateArticleResponse {
     let user_id = UserId::from(caller);
     ARTICLES.with(|articles| {
         let mut articles = articles.borrow_mut();
-        let mut article = articles.get(&request.post_id).expect("Article not found");
+        let mut article = articles.get(&request.article_id).expect("Article not found");
 
         // Verify caller is author or co-author
         assert!(
@@ -75,7 +75,7 @@ pub fn update_article(caller: Principal, request: UpdateArticleRequest) -> Updat
         );
 
         if let Some(title) = request.title {
-            article.title = PostTitle::new(&title).expect("Invalid title");
+            article.title = ArticleTitle::new(&title).expect("Invalid title");
         }
         if let Some(summary) = request.summary {
             article.summary = summary;
@@ -98,9 +98,9 @@ pub fn update_article(caller: Principal, request: UpdateArticleRequest) -> Updat
             .unwrap()
             .as_nanos() as u64;
 
-        articles.insert(request.post_id, article.clone());
+        articles.insert(request.article_id, article.clone());
 
-        UpdateArticleResponse { post: article }
+        UpdateArticleResponse { article: article }
     })
 }
 
@@ -111,7 +111,7 @@ pub fn publish_article(
     let user_id = UserId::from(caller);
     ARTICLES.with(|articles| {
         let mut articles = articles.borrow_mut();
-        let mut article = articles.get(&request.post_id).expect("Article not found");
+        let mut article = articles.get(&request.article_id).expect("Article not found");
 
         assert!(
             article.primary_author == user_id,
@@ -119,9 +119,9 @@ pub fn publish_article(
         );
 
         article.publish().expect("Failed to publish article");
-        articles.insert(request.post_id, article.clone());
+        articles.insert(request.article_id, article.clone());
 
-        PublishArticleResponse { post: article }
+        PublishArticleResponse { article: article }
     })
 }
 
@@ -129,62 +129,62 @@ pub fn get_article(_caller: Principal, request: GetArticleRequest) -> GetArticle
     ARTICLES.with(|articles| {
         let mut articles = articles.borrow_mut();
         let mut article = articles
-            .get(&request.post_id)
+            .get(&request.article_id)
             .expect("Article not found")
             .clone();
 
         // Increment view count for published articles
-        if article.status == PostStatus::Published {
+        if article.status == ArticleStatus::Published {
             article.increment_views();
-            articles.insert(request.post_id, article.clone());
+            articles.insert(request.article_id, article.clone());
         }
 
-        GetArticleResponse { post: article }
+        GetArticleResponse { article: article }
     })
 }
 
 pub fn list_articles(_caller: Principal, request: ListArticlesRequest) -> ListArticlesResponse {
     ARTICLES.with(|articles| {
         let articles = articles.borrow();
-        let mut matching_posts: Vec<Post> = articles
+        let mut matching_articles: Vec<Article> = articles
             .iter()
-            .filter(|(_, post)| {
+            .filter(|(_, article)| {
                 let author_match = request
                     .author
                     .as_ref()
-                    .map(|author| &post.primary_author == author)
+                    .map(|author| &article.primary_author == author)
                     .unwrap_or(true);
 
                 let category_match = request
                     .category
                     .as_ref()
-                    .map(|cat| post.categories.contains(cat))
+                    .map(|cat| article.categories.contains(cat))
                     .unwrap_or(true);
 
                 let status_match = request
                     .status
                     .as_ref()
-                    .map(|status| &post.status == status)
+                    .map(|status| &article.status == status)
                     .unwrap_or(true);
 
                 let tag_match = request
                     .tag
                     .as_ref()
-                    .map(|tag| post.tags.contains(tag))
+                    .map(|tag| article.tags.contains(tag))
                     .unwrap_or(true);
 
                 author_match && category_match && status_match && tag_match
             })
-            .map(|(_, post)| post.clone())
+            .map(|(_, article)| article.clone())
             .collect();
 
         // Sort by newest first
-        matching_posts.sort_by(|a, b| b.created_at.cmp(&a.created_at));
+        matching_articles.sort_by(|a, b| b.created_at.cmp(&a.created_at));
 
-        let total = matching_posts.len() as u32;
+        let total = matching_articles.len() as u32;
         let start = (request.page * request.page_size) as usize;
         let end = ((request.page + 1) * request.page_size) as usize;
-        let posts = matching_posts
+        let articles = matching_articles
             .into_iter()
             .skip(start)
             .take(end - start)
@@ -192,7 +192,7 @@ pub fn list_articles(_caller: Principal, request: ListArticlesRequest) -> ListAr
         let total_pages = (total + request.page_size - 1) / request.page_size;
 
         ListArticlesResponse {
-            posts,
+            articles,
             total,
             page: request.page,
             total_pages,
@@ -204,7 +204,7 @@ pub fn add_co_author(caller: Principal, request: AddCoAuthorRequest) -> AddCoAut
     let user_id = UserId::from(caller);
     ARTICLES.with(|articles| {
         let mut articles = articles.borrow_mut();
-        let mut article = articles.get(&request.post_id).expect("Article not found");
+        let mut article = articles.get(&request.article_id).expect("Article not found");
 
         assert!(
             article.primary_author == user_id,
@@ -213,10 +213,10 @@ pub fn add_co_author(caller: Principal, request: AddCoAuthorRequest) -> AddCoAut
 
         if !article.co_authors.contains(&request.co_author) {
             article.co_authors.push(request.co_author);
-            articles.insert(request.post_id, article.clone());
+            articles.insert(request.article_id, article.clone());
         }
 
-        AddCoAuthorResponse { post: article }
+        AddCoAuthorResponse { article: article }
     })
 }
 
@@ -226,14 +226,14 @@ pub fn search_articles(
 ) -> SearchArticlesResponse {
     ARTICLES.with(|articles| {
         let articles = articles.borrow();
-        let mut matching_posts: Vec<Post> = articles
+        let mut matching_articles: Vec<Article> = articles
             .iter()
-            .filter(|(_, post)| {
+            .filter(|(_, article)| {
                 let query = request.query.to_lowercase();
-                let title_match = post.title.to_string().to_lowercase().contains(&query);
-                let summary_match = post.summary.to_lowercase().contains(&query);
-                let content_match = post.content.to_lowercase().contains(&query);
-                let tag_match = post
+                let title_match = article.title.to_string().to_lowercase().contains(&query);
+                let summary_match = article.summary.to_lowercase().contains(&query);
+                let content_match = article.content.to_lowercase().contains(&query);
+                let tag_match = article
                     .tags
                     .iter()
                     .any(|tag| tag.to_lowercase().contains(&query));
@@ -241,21 +241,21 @@ pub fn search_articles(
                 let category_match = request
                     .category
                     .as_ref()
-                    .map(|cat| post.categories.contains(cat))
+                    .map(|cat| article.categories.contains(cat))
                     .unwrap_or(true);
 
                 (title_match || summary_match || content_match || tag_match) && category_match
             })
-            .map(|(_, post)| post.clone())
+            .map(|(_, article)| article.clone())
             .collect();
 
         // Sort by relevance (currently just newest first)
-        matching_posts.sort_by(|a, b| b.created_at.cmp(&a.created_at));
+        matching_articles.sort_by(|a, b| b.created_at.cmp(&a.created_at));
 
-        let total = matching_posts.len() as u32;
+        let total = matching_articles.len() as u32;
         let start = (request.page * request.page_size) as usize;
         let end = ((request.page + 1) * request.page_size) as usize;
-        let posts = matching_posts
+        let articles = matching_articles
             .into_iter()
             .skip(start)
             .take(end - start)
@@ -263,7 +263,7 @@ pub fn search_articles(
         let total_pages = (total + request.page_size - 1) / request.page_size;
 
         SearchArticlesResponse {
-            posts,
+            articles,
             total,
             page: request.page,
             total_pages,

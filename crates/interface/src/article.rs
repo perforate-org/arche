@@ -12,10 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::{Request, Response};
-use candid::CandidType;
-use common::{Post, PostCategory, PostId, PostStatus, UserId};
-use serde::{Deserialize, Serialize};
+use crate::{Request, Response, CandidType, Deserialize, Serialize};
+use common::{Article, ArticleCategory, ArticleId, ArticleStatus, UserId};
 
 /// Request to create a new article draft
 #[derive(Request, Clone, CandidType, Serialize, Deserialize, Debug)]
@@ -23,7 +21,7 @@ pub struct CreateArticleRequest {
     pub title: String,
     pub summary: String,
     pub content: String,
-    pub categories: Vec<PostCategory>,
+    pub categories: Vec<ArticleCategory>,
     pub tags: Vec<String>,
     pub cover_image: Option<String>,
 }
@@ -31,17 +29,17 @@ pub struct CreateArticleRequest {
 /// Response for article creation
 #[derive(Response, CandidType, Serialize, Deserialize, Debug)]
 pub struct CreateArticleResponse {
-    pub post_id: PostId,
+    pub article_id: ArticleId,
 }
 
 /// Request to update an existing article
 #[derive(Request, Clone, CandidType, Serialize, Deserialize, Debug)]
 pub struct UpdateArticleRequest {
-    pub post_id: PostId,
+    pub article_id: ArticleId,
     pub title: Option<String>,
     pub summary: Option<String>,
     pub content: Option<String>,
-    pub categories: Option<Vec<PostCategory>>,
+    pub categories: Option<Vec<ArticleCategory>>,
     pub tags: Option<Vec<String>>,
     pub cover_image: Option<String>,
 }
@@ -49,39 +47,39 @@ pub struct UpdateArticleRequest {
 /// Response for article update
 #[derive(Response, CandidType, Serialize, Deserialize, Debug)]
 pub struct UpdateArticleResponse {
-    pub post: Post,
+    pub article: Article,
 }
 
 /// Request to publish a draft article
 #[derive(Request, Clone, CandidType, Serialize, Deserialize, Debug)]
 pub struct PublishArticleRequest {
-    pub post_id: PostId,
+    pub article_id: ArticleId,
 }
 
 /// Response for article publication
 #[derive(Response, CandidType, Serialize, Deserialize, Debug)]
 pub struct PublishArticleResponse {
-    pub post: Post,
+    pub article: Article,
 }
 
 /// Request to get an article by ID
 #[derive(Request, Clone, CandidType, Serialize, Deserialize, Debug)]
 pub struct GetArticleRequest {
-    pub post_id: PostId,
+    pub article_id: ArticleId,
 }
 
 /// Response containing article data
 #[derive(Response, CandidType, Serialize, Deserialize, Debug)]
 pub struct GetArticleResponse {
-    pub post: Post,
+    pub article: Article,
 }
 
 /// Request to list articles with optional filters
 #[derive(Request, Clone, CandidType, Serialize, Deserialize, Debug)]
 pub struct ListArticlesRequest {
     pub author: Option<UserId>,
-    pub category: Option<PostCategory>,
-    pub status: Option<PostStatus>,
+    pub category: Option<ArticleCategory>,
+    pub status: Option<ArticleStatus>,
     pub tag: Option<String>,
     pub page_size: u32,
     pub page: u32,
@@ -90,7 +88,7 @@ pub struct ListArticlesRequest {
 /// Response containing a page of articles
 #[derive(Response, CandidType, Serialize, Deserialize, Debug)]
 pub struct ListArticlesResponse {
-    pub posts: Vec<Post>,
+    pub articles: Vec<Article>,
     pub total: u32,
     pub page: u32,
     pub total_pages: u32,
@@ -99,21 +97,21 @@ pub struct ListArticlesResponse {
 /// Request to add a co-author to an article
 #[derive(Request, Clone, CandidType, Serialize, Deserialize, Debug)]
 pub struct AddCoAuthorRequest {
-    pub post_id: PostId,
+    pub article_id: ArticleId,
     pub co_author: UserId,
 }
 
 /// Response for co-author addition
 #[derive(Response, CandidType, Serialize, Deserialize, Debug)]
 pub struct AddCoAuthorResponse {
-    pub post: Post,
+    pub article: Article,
 }
 
 /// Request to search articles
 #[derive(Request, Clone, CandidType, Serialize, Deserialize, Debug)]
 pub struct SearchArticlesRequest {
     pub query: String,
-    pub category: Option<PostCategory>,
+    pub category: Option<ArticleCategory>,
     pub page_size: u32,
     pub page: u32,
 }
@@ -121,7 +119,7 @@ pub struct SearchArticlesRequest {
 /// Response containing search results
 #[derive(Response, CandidType, Serialize, Deserialize, Debug)]
 pub struct SearchArticlesResponse {
-    pub posts: Vec<Post>,
+    pub articles: Vec<Article>,
     pub total: u32,
     pub page: u32,
     pub total_pages: u32,

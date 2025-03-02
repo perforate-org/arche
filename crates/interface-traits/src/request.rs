@@ -1,5 +1,5 @@
 use candid::{CandidType, Principal};
-use common::{PostId, UserId};
+use common::{ArticleId, UserId};
 pub use interface_derive::Request;
 
 pub trait Request: CandidType + Clone + Send + Sync + 'static {}
@@ -21,7 +21,7 @@ impl Request for String {}
 
 impl Request for Principal {}
 impl Request for UserId {}
-impl Request for PostId {}
+impl Request for ArticleId {}
 
 impl<T: Request, const N: usize> Request for [T; N] {}
 impl<T: Request> Request for Vec<T> {}
