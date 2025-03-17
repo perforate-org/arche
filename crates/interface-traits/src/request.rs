@@ -1,5 +1,5 @@
 use candid::{CandidType, Principal};
-use common::{ArticleId, UserId};
+use domain::{user::{entity::dto::User, UserId}, article::{ArticleId, entity::dto::Article}};
 pub use interface_derive::Request;
 
 pub trait Request: CandidType + Clone + Send + Sync + 'static {}
@@ -22,6 +22,9 @@ impl Request for String {}
 impl Request for Principal {}
 impl Request for UserId {}
 impl Request for ArticleId {}
+
+impl Request for User {}
+impl Request for Article {}
 
 impl<T: Request, const N: usize> Request for [T; N] {}
 impl<T: Request> Request for Vec<T> {}

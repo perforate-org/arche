@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use crate::LOG;
+use crate::infrastructure::LOG;
 use candid::{CandidType, Decode, Deserialize, Encode, Principal};
 use ic_cdk::api::print;
 use ic_stable_structures::storable::{Bound, Storable};

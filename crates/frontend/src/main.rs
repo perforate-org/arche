@@ -9,14 +9,15 @@ use std::sync::Arc;
 mod app;
 mod components;
 mod context;
+mod features;
 
 use app::{fallback::Fallback, App};
-use context::service::Service;
+use context::service::{Service, Backend};
 
 #[derive(Clone, Store)]
 struct GlobalState {
     identity: Arc<dyn Identity>,
-    service: Service,
+    service: Service<Backend>,
 }
 
 impl Default for GlobalState {

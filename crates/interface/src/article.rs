@@ -13,7 +13,10 @@
 // limitations under the License.
 
 use crate::{Request, Response, CandidType, Deserialize, Serialize};
-use common::{Article, ArticleCategory, ArticleId, ArticleStatus, UserId};
+use domain::{
+    article::{entity::dto::Article, value_object::{ArticleCategory, ArticleStatus}},
+    ArticleId, UserId,
+};
 
 /// Request to create a new article draft
 #[derive(Request, Clone, CandidType, Serialize, Deserialize, Debug)]
@@ -45,7 +48,7 @@ pub struct UpdateArticleRequest {
 }
 
 /// Response for article update
-#[derive(Response, CandidType, Serialize, Deserialize, Debug)]
+#[derive(Response, CandidType, Deserialize, Debug)]
 pub struct UpdateArticleResponse {
     pub article: Article,
 }
@@ -57,7 +60,7 @@ pub struct PublishArticleRequest {
 }
 
 /// Response for article publication
-#[derive(Response, CandidType, Serialize, Deserialize, Debug)]
+#[derive(Response, CandidType, Deserialize, Debug)]
 pub struct PublishArticleResponse {
     pub article: Article,
 }
@@ -69,7 +72,7 @@ pub struct GetArticleRequest {
 }
 
 /// Response containing article data
-#[derive(Response, CandidType, Serialize, Deserialize, Debug)]
+#[derive(Response, CandidType, Deserialize, Debug)]
 pub struct GetArticleResponse {
     pub article: Article,
 }
@@ -86,7 +89,7 @@ pub struct ListArticlesRequest {
 }
 
 /// Response containing a page of articles
-#[derive(Response, CandidType, Serialize, Deserialize, Debug)]
+#[derive(Response, CandidType, Deserialize, Debug)]
 pub struct ListArticlesResponse {
     pub articles: Vec<Article>,
     pub total: u32,
@@ -102,7 +105,7 @@ pub struct AddCoAuthorRequest {
 }
 
 /// Response for co-author addition
-#[derive(Response, CandidType, Serialize, Deserialize, Debug)]
+#[derive(Response, CandidType, Deserialize, Debug)]
 pub struct AddCoAuthorResponse {
     pub article: Article,
 }
@@ -117,7 +120,7 @@ pub struct SearchArticlesRequest {
 }
 
 /// Response containing search results
-#[derive(Response, CandidType, Serialize, Deserialize, Debug)]
+#[derive(Response, CandidType, Deserialize, Debug)]
 pub struct SearchArticlesResponse {
     pub articles: Vec<Article>,
     pub total: u32,

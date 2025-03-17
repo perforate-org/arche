@@ -3,17 +3,18 @@ use leptos_meta::*;
 use leptos_router::components::{ParentRoute, Route, Router, Routes, RoutingProgress};
 use leptos_router_macro::path;
 
-mod author;
+mod article;
+mod user;
 pub mod fallback;
 mod home;
 
-use author::Author;
-use home::Home;
-
 #[component]
 pub fn App() -> impl IntoView {
+    let (is_routing, set_is_routing) = signal(false);
+
     view! {
-        <Router>
+        <RoutingProgress is_routing />
+        <Router set_is_routing>
             <Title formatter=|text: String| {
                 let text = match text.as_str() {
                     "" => text,
@@ -24,8 +25,9 @@ pub fn App() -> impl IntoView {
 
             <main class="grid place-content-center p-8 w-screen min-h-screen">
                 <Routes transition=true fallback=|| crate::Fallback>
-                    <Route path=path!("/") view=Home/>
-                    <Route path=path!("/author/:author_id") view=Author/>
+                    <Route path=path!("/") view=home::Home/>
+                    <Route path=path!("/article/:article_id") view=article::Article/>
+                    <Route path=path!("/user/:user_id") view=user::User/>
                 </Routes>
             </main>
         </Router>

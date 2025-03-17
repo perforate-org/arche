@@ -5,7 +5,7 @@ version = "0.0.1"
 edition = "2021"
 
 [dependencies]
-common.workspace = true
+domain = { workspace = true, features = ["dto"] }
 interface-traits = { path = "../interface-traits" }
 
 candid.workspace = true

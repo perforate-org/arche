@@ -5,8 +5,9 @@ version = "0.0.1"
 edition = "2021"
 
 [dependencies]
-common = { workspace = true, features = ["wasm-js"] }
+domain.workspace = true
 interface.workspace = true
+util = { workspace = true, features = ["wasm-js"] }
 
 anyhow.workspace = true
 candid.workspace = true

@@ -1,0 +1,29 @@
+[package]
+publish = false
+name = "domain"
+version = "0.0.1"
+edition = "2021"
+
+[dependencies]
+candid = { workspace = true, optional = true }
+derive_more = { version = "2", features = [
+    "as_ref",
+    "display",
+    "from",
+    "into",
+] }
+dotenvy_macro = "0.15.7"
+hexaurl.workspace = true
+ic-cdk = { version = "0.17.1", optional = true }
+ic-stable-structures = { workspace = true, optional = true }
+serde.workspace = true
+thiserror = "2.0.11"
+util.workspace = true
+
+[features]
+default = ["value-object"]
+canister = ["candid", "ic-cdk"]
+dto = []
+entity = ["dto"]
+ic-stable = ["hexaurl/ic-stable", "ic-stable-structures"]
+value-object = ["candid"]

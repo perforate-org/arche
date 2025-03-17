@@ -1,8 +1,10 @@
-use crate::{CandidType, Request, Response};
-use common::UserId;
+use crate::{CandidType, Response};
+use domain::user::{UserName, entity::dto::User};
 use serde::{Deserialize, Serialize};
 
-#[derive(Response, CandidType, Serialize, Deserialize, Debug)]
-pub struct UserProfileResponse {
-    pub name: String,
+pub mod register_user;
+
+#[derive(Response, CandidType, Deserialize, Debug)]
+pub struct UserResponse {
+    pub user: User,
 }

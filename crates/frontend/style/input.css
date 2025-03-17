@@ -1,1 +1,11 @@
 @import "tailwindcss" source("../src");
+@plugin "daisyui";
+
+progress {
+    @apply fixed h-[1px] rounded-full;
+}
+
+progress[value="100"]::-webkit-progress-value,
+progress[value="100"]::-moz-progress-bar {
+    @apply bg-blue-500;
+}

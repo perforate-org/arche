@@ -1,10 +1,10 @@
 use candid::{CandidType, Principal};
-use common::{ArticleId, UserId};
+use domain::{user::{entity::dto::User, UserId}, article::{ArticleId, entity::dto::Article}};
 pub use interface_derive::Response;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 pub trait Response:
-    CandidType + Send + Sync + Serialize + for<'de> Deserialize<'de> + 'static
+    CandidType + Send + Sync + for<'de> Deserialize<'de> + 'static
 {
 }
 
@@ -26,6 +26,9 @@ impl Response for String {}
 impl Response for Principal {}
 impl Response for UserId {}
 impl Response for ArticleId {}
+
+impl Response for User {}
+impl Response for Article {}
 
 impl<T: Response> Response for [T; 0] {}
 impl<T: Response> Response for [T; 1] {}

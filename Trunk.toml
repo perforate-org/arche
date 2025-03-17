@@ -3,7 +3,7 @@ target = "crates/frontend/index.html"
 dist = "dist/frontend"
 
 [watch]
-watch = ["crates/frontend", "crates/common", "crates/interface"]
+watch = ["crates/frontend", "crates/domain", "crates/interface", "crates/util"]
 ignore = [
     "crates/frontend/style/output.css",
     "crates/frontend/public",

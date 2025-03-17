@@ -1,28 +1,51 @@
 use crate::{GlobalState, GlobalStateStoreFields, Store};
-use candid::{Decode, Encode};
-use common::util::{
+use candid::{Decode, Encode, Principal};
+use util::{
     canister_id::BACKEND,
     dfx_network::{DfxNetwork, DFX_NETWORK},
 };
 use ic_agent::{Agent, Identity};
 use interface::{Request, Response};
 use leptos::prelude::*;
-use std::{sync::Arc, time::Duration};
+use std::{sync::Arc, time::Duration, marker::PhantomData};
 
 pub const TIMEOUT: Duration = Duration::from_secs(60 * 5);
 
 /// Service is a struct that encapsulates the agent used to interact with the backend canister.
 #[derive(Debug, Clone, Default)]
-pub struct Service {
+pub struct Service<T>
+where
+    T: Canister,
+{
     /// Agent used to interact with the backend canister.
     agent: Option<Agent>,
+    /// Marker for the generic type parameter.
+    _marker: PhantomData<T>,
 }
 
-impl Service {
+pub trait Canister {
+    fn canister_id() -> Principal;
+}
+
+/// A struct that encapsulates the agent used to interact with the backend canister.
+#[derive(Debug, Copy, Clone, Default)]
+pub struct Backend {}
+
+impl Canister for Backend {
+    fn canister_id() -> Principal {
+        *BACKEND
+    }
+}
+
+impl<T> Service<T>
+where
+    T: Canister,
+{
     pub async fn with(identity: Arc<dyn Identity>) -> Self {
         // Asynchronously create an agent to interact with the IC network.
         Self {
             agent: Some(create_agent(identity).await),
+            _marker: PhantomData,
         }
     }
 
@@ -52,13 +75,13 @@ impl Service {
             .agent
             .as_ref()
             .unwrap()
-            .query(&BACKEND, method)
+            .query(&T::canister_id(), method)
             .with_arg(arg)
             .await
             .unwrap_or_else(|e| {
                 panic!(
                     "Failed to query call: canister_id: {}, method: {}, error: {:?}",
-                    *BACKEND, method, e
+                    T::canister_id(), method, e
                 );
             });
 
@@ -92,13 +115,13 @@ impl Service {
             .agent
             .as_ref()
             .unwrap()
-            .update(&BACKEND, method)
+            .update(&T::canister_id(), method)
             .with_arg(arg)
             .await
             .unwrap_or_else(|e| {
                 panic!(
                     "Failed to update call: canister_id: {}, method: {}, error: {:?}",
-                    *BACKEND, method, e
+                    T::canister_id(), method, e
                 );
             });
 

@@ -8,12 +8,13 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-common = { workspace = true, features = ["canister", "ic-stable"] }
+domain = { workspace = true, features = ["canister", "entity", "ic-stable"] }
 interface.workspace = true
+util = { workspace = true, features = ["canister"] }
 
 anyhow.workspace = true
 candid.workspace = true
-futures = "0.3.31"
+chrono = { version = "0.4.40", default-features = false, features = ["alloc", "std"] }
 ic-cdk = "0.17.1"
 ic-cdk-macros = "0.17.1"
 ic-stable-structures = "0.6.7"

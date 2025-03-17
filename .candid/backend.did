@@ -1,6 +1,42 @@
-type Result = variant { Ok : UserProfileResponse; Err : text };
-type UserProfileResponse = record { name : text };
-service : () -> {
-  get_author_profile : (blob) -> (Result) query;
-  get_author_profile_with_str : (text) -> (Result) query;
+type Article = record {
+  categories : vec ArticleCategory;
+  status : ArticleStatus;
+  title : text;
+  updated_at : nat64;
+  references : vec Citation;
+  content : text;
+  cover_image : opt text;
+  tags : vec text;
+  lead_author : blob;
+  created_at : nat64;
+  summary : text;
+  co_authors : vec blob;
+  citations : vec Citation;
+};
+type ArticleCategory = variant {
+  MachineLearning;
+  SystemDesign;
+  Security;
+  Blockchain;
+  DevOps;
+  Programming;
+  Other : text;
+};
+type ArticleId = record { version : nat16; number : nat32; months : nat16 };
+type ArticleStatus = variant { UnderReview; Draft; Archived; Published };
+type Citation = variant { Url : text; Article : ArticleId; Other : text };
+type RegisterUserRequest = record { id : blob; name : text };
+type Result = variant { Ok : Article; Err : text };
+type Result_1 = variant { Ok : User; Err : text };
+type Result_2 = variant { Ok; Err : text };
+type User = record {
+  name : text;
+  lead_authored_articles : vec ArticleId;
+  co_authored_articles : vec ArticleId;
+};
+service : {
+  fetch_article : (ArticleId) -> (Result) query;
+  fetch_user : (blob) -> (Result_1) query;
+  fetch_user_with_str : (text) -> (Result_1) query;
+  register_user : (RegisterUserRequest) -> (Result_2);
 }
