@@ -1,0 +1,24 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+.lattice {
+  background-image:
+    linear-gradient(
+      0deg,
+      transparent calc(100% - 1px),
+      rgba(255, 255, 255, 0.05) calc(100% - 1px)
+    ),
+    linear-gradient(
+      90deg,
+      transparent calc(100% - 1px),
+      rgba(255, 255, 255, 0.05) calc(100% - 1px)
+    );
+  background-size: 1.5rem 1.5rem;
+  background-repeat: repeat;
+  background-position: center center;
+}
+
+.noise {
+  background: url("/noise.svg");
+  filter: contrast(170%) brightness(1000%);
+}

@@ -3,14 +3,17 @@
     "backend": {
       "candid": ".candid/backend.did",
       "package": "backend",
-      "type": "rust"
+      "type": "rust",
+      "declarations": {
+        "output": "frontend/src/declarations/backend"
+      }
     },
     "frontend": {
       "dependencies": ["backend"],
       "frontend": {
-        "entrypoint": "dist/frontend/index.html"
+        "entrypoint": "frontend/dist/index.html"
       },
-      "source": ["crates/frontend/assets", "dist/frontend"],
+      "source": ["frontend/dist/assets"],
       "type": "assets"
     },
     "internet-identity": {

@@ -20,7 +20,7 @@ use crate::infrastructure::{
 pub(super) fn init() {
     let anonymous_principal: UserPrincipal = Principal::anonymous().into();
     let anonymous_id = UserId::new("anonymous").unwrap();
-    let anonymous_name = UserName::new("Anonymous User").unwrap();
+    let anonymous_name = UserName::new("John Doe").unwrap();
     let anonymous_user = User::new(anonymous_name);
 
     let sample_id = ArticleId::from_str("2025-01-0001").unwrap();

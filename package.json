@@ -1,12 +1,41 @@
 {
-  "scripts": {
-    "cleanup": "npx rimraf ./dist",
-    "build": "npm run cleanup && trunk build --release"
-  },
+  "private": true,
   "type": "module",
+  "scripts": {
+    "cleanup": "rimraf ./dist",
+    "start": "vite --port 3000",
+    "build": "vite build && tsc",
+    "serve": "vite preview",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@dfinity/agent": "^2.3.0",
+    "@dfinity/auth-client": "^2.3.0",
+    "@solidjs/meta": "^0.29.4",
+    "@tailwindcss/vite": "^4.0.14",
+    "@tanstack/router-plugin": "^1.112.0",
+    "@tanstack/solid-query": "^5.68.0",
+    "@tanstack/solid-router": "^1.114.1",
+    "@tanstack/solid-router-devtools": "^1.114.1",
+    "arweave": "^1.15.5",
+    "hexaurl-validate": "git+https://github.com/perforate-org/hexaurl-validate-js.git",
+    "solid-js": "^1.9.5",
+    "tailwindcss": "^4.0.7"
+  },
   "devDependencies": {
     "daisyui": "^5.0.3",
-    "@tailwindcss/cli": "^4.0.7",
-    "tailwindcss": "^4.0.7"
+    "rimraf": "^6.0.1",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.11",
+    "vite-plugin-environment": "^1.1.3",
+    "vite-plugin-solid": "^2.11.2"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "pnpm": {
+    "ignoredBuiltDependencies": [
+      "esbuild"
+    ]
   }
 }

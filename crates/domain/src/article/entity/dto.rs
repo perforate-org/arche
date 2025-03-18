@@ -9,9 +9,9 @@ use crate::{
 #[derive(Clone, Debug, candid::CandidType, Deserialize)]
 pub struct Article {
     /// The lead author of the article
-    pub lead_author: (UserId, UserName),
+    pub lead_author: (String, UserName),
     /// Co-authors of the article, if any
-    pub co_authors: Vec<(UserId, UserName)>,
+    pub co_authors: Vec<(String, UserName)>,
     /// Title of the article
     pub title: ArticleTitle,
     /// Brief summary of the article
@@ -39,11 +39,11 @@ pub struct Article {
 #[cfg(feature = "entity")]
 impl Article {
     pub fn from_model<T: UserRepository>(article: model::Article<T::PrimaryKey>, user_repo: &T) -> Option<Self> {
-        let lead_author = (user_repo.get_user_id(&article.lead_author)?, user_repo.get_by_primary_key(&article.lead_author)?.name);
+        let lead_author = (user_repo.get_user_id(&article.lead_author)?.to_string(), user_repo.get_by_primary_key(&article.lead_author)?.name);
         let co_authors = article.co_authors.into_iter().map(|key| -> Option<_> {
             let id = user_repo.get_user_id(&key)?;
             let user = user_repo.get_by_primary_key(&key)?;
-            Some((id, user.name))
+            Some((id.to_string(), user.name))
         }).collect::<Option<Vec<_>>>()?;
 
         Some(Article {
@@ -64,11 +64,11 @@ impl Article {
     }
 
     pub fn into_model<T: UserRepository>(&self, user_repo: &T) -> Option<model::Article<T::PrimaryKey>> {
-        let lead_author = user_repo.get_primary_key(&self.lead_author.0)?;
+        let lead_author = user_repo.get_primary_key(&UserId::new(&self.lead_author.0).ok()?)?;
         let co_authors = self
             .co_authors
             .iter()
-            .map(|author| user_repo.get_primary_key(&author.0))
+            .map(|author| user_repo.get_primary_key(&UserId::new(&author.0).ok()?))
             .collect::<Option<Vec<_>>>()?;
 
         Some(model::Article {

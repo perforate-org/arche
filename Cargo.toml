@@ -2,7 +2,6 @@
 members = [
     "crates/backend",
     "crates/domain",
-    "crates/frontend",
     "crates/interface",
     "crates/interface-derive",
     "crates/interface-traits",
