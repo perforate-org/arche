@@ -8,6 +8,7 @@ use domain::user::{
 };
 use ic_cdk_macros::*;
 use interface::user::*;
+use super::guards::{caller_is_user, caller_is_not_anonymous};
 
 fn controller() -> UserController<StableUserRepository, UserPrincipal> {
     UserController::<StableUserRepository, UserPrincipal>::new(
@@ -22,9 +23,37 @@ fn fetch_user(user_id: String) -> Result<User, String> {
     controller.fetch(&user_id)
 }
 
-#[update]
-fn register_user(req: register_user::RegisterUserRequest) -> Result<(), String> {
+#[query(guard = "caller_is_not_anonymous")]
+fn is_registered() -> bool {
+    let controller = controller();
+
+    controller.is_registered()
+}
+
+#[query(guard = "caller_is_not_anonymous")]
+fn fetch_caller() -> Result<User, String> {
+    let controller = controller();
+
+    controller.fetch_caller()
+}
+
+#[query]
+fn user_exists_by_id(user_id: String) -> Result<bool, String> {
+    let controller = controller();
+
+    controller.user_exists_by_id(&user_id)
+}
+
+#[update(guard = "caller_is_not_anonymous")]
+fn register_user() -> Result<(), String> {
     let mut controller = controller();
 
-    controller.register(req)
+    controller.register()
+}
+
+#[update(guard = "caller_is_user")]
+fn update_caller(user: User) -> Result<(), String> {
+    let mut controller = controller();
+
+    controller.update_caller(user)
 }

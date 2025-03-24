@@ -1,5 +1,5 @@
 use candid::{CandidType, Principal};
-use derive_more::{AsRef, Display, From, Into};
+use derive_more::{AsRef, Display, From, Into, FromStr};
 use serde::{Deserialize, Serialize};
 
 #[derive(
@@ -18,6 +18,7 @@ use serde::{Deserialize, Serialize};
     From,
     Display,
     Into,
+    FromStr,
 )]
 pub struct UserPrincipal(Principal);
 

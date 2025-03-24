@@ -1,6 +1,6 @@
 use crate::{CandidType, Response};
-use domain::user::{UserName, entity::dto::User};
-use serde::{Deserialize, Serialize};
+use domain::user::entity::dto::User;
+use serde::Deserialize;
 
 pub mod register_user;
 

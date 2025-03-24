@@ -1,24 +1,62 @@
 @import "tailwindcss";
-@plugin "daisyui";
+@plugin "daisyui" {
+  themes: corporate --default;
+}
+@plugin "daisyui/theme" {
+  name: "dark";
+  prefersdark: true;
+  --color-primary: oklch(0.546 0.245 262.881);
+}
+
+@custom-variant hover {
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      @slot;
+    }
+  }
+}
+
+a,
+button,
+[role="button"] {
+  cursor: default;
+}
 
 .lattice {
-  background-image:
-    linear-gradient(
-      0deg,
-      transparent calc(100% - 1px),
-      rgba(255, 255, 255, 0.05) calc(100% - 1px)
-    ),
-    linear-gradient(
-      90deg,
-      transparent calc(100% - 1px),
-      rgba(255, 255, 255, 0.05) calc(100% - 1px)
-    );
-  background-size: 1.5rem 1.5rem;
+  @media (prefers-color-scheme: dark) {
+    background-image:
+      linear-gradient(
+        0deg,
+        transparent calc(100% - 1px),
+        oklch(0.279 0.041 260.031) calc(100% - 1px)
+      ),
+      linear-gradient(
+        90deg,
+        transparent calc(100% - 1px),
+        oklch(0.279 0.041 260.031) calc(100% - 1px)
+      );
+    border: 1px solid oklch(0.279 0.041 260.031);
+  }
+  @media (prefers-color-scheme: light) {
+    background-image:
+      linear-gradient(
+        0deg,
+        transparent calc(100% - 1px),
+        oklch(0.929 0.013 255.508) calc(100% - 1px)
+      ),
+      linear-gradient(
+        90deg,
+        transparent calc(100% - 1px),
+        oklch(0.929 0.013 255.508) calc(100% - 1px)
+      );
+    border: 1px solid oklch(0.929 0.013 255.508);
+  }
+  background-size: 1rem 1rem;
   background-repeat: repeat;
   background-position: center center;
 }
 
 .noise {
-  background: url("/noise.svg");
+  background: url("/images/noise.svg");
   filter: contrast(170%) brightness(1000%);
 }

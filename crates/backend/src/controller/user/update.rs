@@ -1,20 +1,33 @@
 use domain::user::{
-    UserPrimaryKey,
+    UserPrimaryKey, UserPrincipal,
     repository::UserRepository,
     service::UserService,
+    entity::dto
 };
 use super::UserController;
 use interface::user::*;
+use ic_cdk::api::{caller, print};
 
 impl<R, K> UserController<R, K>
 where
-    R: UserRepository + Clone,
+    R: UserRepository<PrimaryKey = UserPrincipal> + Clone,
     K: UserPrimaryKey,
 {
-    pub fn register(&mut self, req: register_user::RegisterUserRequest) -> Result<(), String> {
+    pub fn register(&mut self) -> Result<(), String> {
         let mut user_service: UserService<R> = UserService::new(self.repository.clone());
 
-        user_service.register(req.id, req.name).map_err(|e| e.to_string())?;
+        user_service.register().map_err(|e| e.to_string())?;
+        Ok(())
+    }
+
+    pub fn update_caller(&mut self, user: dto::User) -> Result<(), String> {
+        let mut user_repository = self.repository.clone();
+
+        user_repository.update(&caller().into(), user.into()).map_err(|e| {
+            print(format!("Failed to update user: {}", e));
+            e.to_string()
+        })?;
+
         Ok(())
     }
 }

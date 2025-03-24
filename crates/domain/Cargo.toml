@@ -11,6 +11,7 @@ derive_more = { version = "2", features = [
     "display",
     "from",
     "into",
+    "from_str"
 ] }
 dotenvy_macro = "0.15.7"
 hexaurl.workspace = true

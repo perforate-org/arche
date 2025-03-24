@@ -12,6 +12,7 @@ use serde::{Deserialize, Serialize};
     Hash,
     Eq,
     PartialEq,
+    Default,
     AsRef,
     Display,
     Into,

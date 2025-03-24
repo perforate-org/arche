@@ -1,6 +1,8 @@
+#![allow(unused)]
+
 use domain::{
-    article::{
-        entity::dto::Article,
+    paper::{
+        entity::dto::Paper,
         value_object::*,
     },
     user::{
@@ -9,9 +11,10 @@ use domain::{
     },
 };
 use interface::user::*;
-use interface::article::*;
+use interface::paper::*;
 
-mod article;
+mod guards;
+mod paper;
 mod user;
 
 ic_cdk::export_candid!();

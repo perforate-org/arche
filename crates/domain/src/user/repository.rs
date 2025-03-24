@@ -54,18 +54,6 @@ pub trait UserRepository {
     /// * `None` if no user with the given primary key exists
     fn get_by_primary_key(&self, primary_key: &Self::PrimaryKey) -> Option<User>;
 
-    /// Checks if a user with the given ID is contained.
-    ///
-    /// # Arguments
-    ///
-    /// * `user_id` - The user ID to check
-    ///
-    /// # Returns
-    ///
-    /// * `true` if a user with the given ID exists
-    /// * `false` if no user with the given ID exists
-    fn contains(&self, user_id: &UserId) -> bool;
-
     /// Checks if a user with the given primary key is contained.
     ///
     /// # Arguments
@@ -76,7 +64,19 @@ pub trait UserRepository {
     ///
     /// * `true` if a user with the given primary key exists
     /// * `false` if no user with the given primary key exists
-    fn contains_by_primary_key(&self, primary_key: &Self::PrimaryKey) -> bool;
+    fn contains(&self, primary_key: &Self::PrimaryKey) -> bool;
+
+    /// Checks if a user with the given ID is contained.
+    ///
+    /// # Arguments
+    ///
+    /// * `user_id` - The user ID to check
+    ///
+    /// # Returns
+    ///
+    /// * `true` if a user with the given ID exists
+    /// * `false` if no user with the given ID exists
+    fn contains_id(&self, user_id: &UserId) -> bool;
 
     /// Retrieves the primary key of a user with the given ID.
     ///
@@ -115,7 +115,7 @@ pub trait UserRepository {
     /// * `Ok(())` if the user was stored successfully
     /// * `Err(UserRepositoryError::IdAlreadyExists)` if the user ID already exists
     /// * `Err(UserRepositoryError::PrimaryKeyAlreadyExists)` if the user primary_key already exists
-    fn add(&mut self, primary_key: Self::PrimaryKey, id: UserId, user: User) -> Result<(), UserRepositoryError>;
+    fn add(&mut self, primary_key: Self::PrimaryKey, user: User) -> Result<(), UserRepositoryError>;
 
     /// Updates an existing user in the repository.
     ///
@@ -130,7 +130,7 @@ pub trait UserRepository {
     /// * `Err(UserRepositoryError::NotFound)` if no user with the given primary_key exists
     fn update(&mut self, primary_key: &Self::PrimaryKey, user: User) -> Result<(), UserRepositoryError>;
 
-    /// Changes a user's ID.
+    /// Updates a user's ID.
     ///
     /// # Arguments
     ///
@@ -139,10 +139,10 @@ pub trait UserRepository {
     ///
     /// # Returns
     ///
-    /// * `Ok(())` if the user's ID was changed successfully
+    /// * `Ok(())` if the user's ID was updated successfully
     /// * `Err(UserRepositoryError::NotFound)` if no user with the old ID exists
     /// * `Err(UserRepositoryError::IdAlreadyExists)` if the new ID is already in use
-    fn change_id(&mut self, primary_key: &Self::PrimaryKey, new_id: UserId) -> Result<(), UserRepositoryError>;
+    fn update_id(&mut self, primary_key: &Self::PrimaryKey, new_id: Option<UserId>) -> Result<(), UserRepositoryError>;
 
     /// Removes a user by their primary_key identifier.
     ///

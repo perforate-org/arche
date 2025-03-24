@@ -1,4 +1,5 @@
 use core::hash::Hash;
+use std::{fmt::Display, str::FromStr};
 #[cfg(feature = "canister")]
 use super::UserPrincipal;
 
@@ -9,7 +10,7 @@ use super::UserPrincipal;
 /// - Guaranteed to be globally unique across the entire system
 /// - Used for reliable identification and retrieval of user records
 /// - Immutable once assigned to a user
-pub trait UserPrimaryKey: Eq + PartialEq + Hash + Ord + PartialOrd + Clone + Copy + Sized + Send + Sync
+pub trait UserPrimaryKey: Eq + PartialEq + Hash + Ord + PartialOrd + Clone + Copy + Sized + Send + Sync + Display + FromStr
 {
     /// Generates a new user primary key.
     ///

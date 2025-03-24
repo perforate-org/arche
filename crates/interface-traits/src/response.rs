@@ -1,5 +1,5 @@
 use candid::{CandidType, Principal};
-use domain::{user::{entity::dto::User, UserId}, article::{ArticleId, entity::dto::Article}};
+use domain::{user::{entity::dto::User, UserId}, paper::{PaperId, entity::dto::Paper}};
 pub use interface_derive::Response;
 use serde::Deserialize;
 
@@ -25,10 +25,10 @@ impl Response for String {}
 
 impl Response for Principal {}
 impl Response for UserId {}
-impl Response for ArticleId {}
+impl Response for PaperId {}
 
 impl Response for User {}
-impl Response for Article {}
+impl Response for Paper {}
 
 impl<T: Response> Response for [T; 0] {}
 impl<T: Response> Response for [T; 1] {}

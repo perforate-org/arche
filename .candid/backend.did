@@ -1,6 +1,8 @@
-type Article = record {
-  categories : vec ArticleCategory;
-  status : ArticleStatus;
+type Citation = variant { Url : text; Paper : PaperId; Other : text };
+type Paper = record {
+  ab : text;
+  categories : vec PaperCategory;
+  status : PaperStatus;
   title : text;
   updated_at : nat64;
   references : vec Citation;
@@ -9,11 +11,10 @@ type Article = record {
   tags : vec text;
   lead_author : record { text; text };
   created_at : nat64;
-  summary : text;
   co_authors : vec record { text; text };
   citations : vec Citation;
 };
-type ArticleCategory = variant {
+type PaperCategory = variant {
   MachineLearning;
   SystemDesign;
   Security;
@@ -22,20 +23,24 @@ type ArticleCategory = variant {
   Programming;
   Other : text;
 };
-type ArticleId = record { version : nat16; number : nat32; months : nat16 };
-type ArticleStatus = variant { UnderReview; Draft; Archived; Published };
-type Citation = variant { Url : text; Article : ArticleId; Other : text };
-type RegisterUserRequest = record { id : blob; name : text };
-type Result = variant { Ok : Article; Err : text };
-type Result_1 = variant { Ok : User; Err : text };
+type PaperId = record { version : nat16; number : nat32; months : nat16 };
+type PaperStatus = variant { UnderReview; Draft; Archived; Published };
+type Result = variant { Ok : User; Err : text };
+type Result_1 = variant { Ok : Paper; Err : text };
 type Result_2 = variant { Ok; Err : text };
+type Result_3 = variant { Ok : bool; Err : text };
 type User = record {
+  id : opt text;
   name : text;
-  lead_authored_articles : vec ArticleId;
-  co_authored_articles : vec ArticleId;
+  lead_authored_papers : vec PaperId;
+  co_authored_papers : vec PaperId;
 };
 service : {
-  fetch_article : (text) -> (Result) query;
-  fetch_user : (text) -> (Result_1) query;
-  register_user : (RegisterUserRequest) -> (Result_2);
+  fetch_caller : () -> (Result) query;
+  fetch_paper : (text) -> (Result_1) query;
+  fetch_user : (text) -> (Result) query;
+  is_registered : () -> (bool) query;
+  register_user : () -> (Result_2);
+  update_caller : (User) -> (Result_2);
+  user_exists_by_id : (text) -> (Result_3) query;
 }

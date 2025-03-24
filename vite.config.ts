@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { defineConfig } from "vite";
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import solidPlugin from "vite-plugin-solid";
@@ -31,7 +32,11 @@ export default defineConfig({
     TanStackRouterVite({ target: "solid", autoCodeSplitting: true }),
     solidPlugin(),
     tailwindcss(),
+    environment("all", { prefix: "CANISTER_", defineOn: `import.meta.env` }),
     environment("all", { prefix: "CANISTER_" }),
-    environment("all", { prefix: "DFX_" }),
+    environment("all", { prefix: "DFX_", defineOn: `import.meta.env` }),
   ],
+  test: {
+    include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
+  },
 });

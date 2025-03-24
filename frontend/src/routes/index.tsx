@@ -6,32 +6,32 @@ export const Route = createFileRoute("/")({
 });
 
 function App() {
-  let user = "anonymous";
+  let userId = "anonymous";
+  let paperId = "2025-01-0001";
 
   return (
-    <main class="min-h-screen dark:bg-slate-950 flex flex-col items-center justify-center text-white lattice">
+    <main class="flex min-h-screen flex-col items-center justify-center bg-stone-100 px-8 text-slate-950 md:px-16 dark:bg-stone-900 dark:text-slate-50">
+      <Title>Arche: for Preprints</Title>
       <div
-        class="absolute w-full h-full noise mix-blend-color-luminosity opacity-15 pointer-events-none"
+        class="pointer-events-none absolute inset-x-8 h-full md:inset-x-16"
         aria-hidden="true"
         role="presentation"
-      />
-      <Title>Arche: for Preprints</Title>
-      <div class="text-center px-4">
-        <h1 class="text-6xl font-extrabold mb-4">Arche</h1>
-        <p class="text-2xl mb-8 font-serif">Decentralized Preprint Server</p>
+      >
+        <div class="absolute h-full w-full bg-slate-50 dark:bg-slate-900">
+          <div class="lattice h-full w-full" />
+        </div>
+        <div class="noise dark:mix-blend-color-luminosity h-full w-full opacity-15 mix-blend-color-dodge" />
+      </div>
+      <div class="z-2 px-4 text-center">
+        <h1 class="mb-4 text-6xl font-bold">Arche</h1>
+        <p class="mb-8 font-serif text-xl">Decentralized Preprint Server</p>
         <div class="space-x-4">
-          <Link
-            to={"/user/" + user}
-            class="inline-block px-6 py-3 bg-white text-slate-900 font-semibold rounded-lg shadow hover:bg-gray-100 transition"
-          >
+          <Link to={"/users/" + userId} class="btn btn-sm">
             Enter as John Doe
           </Link>
-          <a
-            href="/article/2025-01-0001"
-            class="inline-block px-6 py-3 border border-white text-white font-semibold rounded-lg hover:bg-white hover:text-purple-600 transition"
-          >
-            Explore Sample Article
-          </a>
+          <Link to={"/abs/" + paperId} class="btn btn-sm btn-primary">
+            Explore Sample Paper
+          </Link>
         </div>
       </div>
     </main>

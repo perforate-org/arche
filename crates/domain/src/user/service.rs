@@ -1,7 +1,7 @@
 use crate::user::{
     entity::model::User,
     repository::{UserRepository, UserRepositoryError},
-    value_object::{UserId, UserPrimaryKey, UserName},
+    value_object::{UserId, UserPrimaryKey},
 };
 use hexaurl::Error as HexaUrlError;
 use thiserror::Error;
@@ -115,24 +115,19 @@ where
     /// * `Err(UserServiceError)` - If registration fails
     pub fn register(
         &mut self,
-        id: UserId,
-        name: UserName,
     ) -> Result<User, UserServiceError> {
         let primary_key = R::PrimaryKey::generate();
 
         // Check if user already exists with this principal or id
-        if self.repository.contains_by_primary_key(&primary_key) {
+        if self.repository.contains(&primary_key) {
             return Err(UserServiceError::PrimaryKeyAlreadyExists);
-        }
-        if self.repository.contains(&id) {
-            return Err(UserServiceError::IdAlreadyExists);
         }
 
         // Create new user
-        let user = User::new(name);
+        let user = User::default();
 
         // Store in repository
-        self.repository.add(primary_key, id, user.clone())?;
+        self.repository.add(primary_key, user.clone())?;
 
         Ok(user)
     }

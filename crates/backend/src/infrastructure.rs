@@ -3,13 +3,13 @@ use domain::{
         entity::dao::UserDao,
         value_object::{UserId, UserPrincipal}
     },
-    article::{
-        entity::dao::ArticleDao,
-        value_object::ArticleId,
+    paper::{
+        entity::dao::PaperDao,
+        value_object::PaperId,
     }
 };
 use crate::{
-    infrastructure::article::repository::ArticleCounter,
+    infrastructure::paper::repository::PaperCounter,
     log::Log,
 };
 use ic_cdk::api::print;
@@ -17,9 +17,9 @@ use ic_stable_structures::{
     memory_manager::{MemoryId, MemoryManager, VirtualMemory},
     DefaultMemoryImpl, StableBTreeMap, StableLog,
 };
-use std::{cell::RefCell, collections::HashMap, sync::Mutex};
+use std::{cell::RefCell, collections::{HashMap, HashSet}, sync::Mutex};
 
-pub mod article;
+pub mod paper;
 pub mod user;
 
 type Memory = VirtualMemory<DefaultMemoryImpl>;
@@ -51,6 +51,8 @@ thread_local! {
         )
     );
 
+    pub static USER_EXISTENCE: RefCell<HashSet<UserPrincipal>> = RefCell::new(HashSet::new());
+
     pub static USER_IDS: RefCell<HashMap<UserPrincipal, UserId>> = RefCell::new(HashMap::new());
 
     pub static USER_IDS_BACKUP: RefCell<StableBTreeMap<UserPrincipal, UserId, Memory>> = RefCell::new(
@@ -65,9 +67,9 @@ thread_local! {
         )
     );
 
-    pub static ARTICLE_COUNTER: RefCell<Mutex<ArticleCounter>> = RefCell::new(Mutex::new(ArticleCounter::default()));
+    pub static PAPER_COUNTER: RefCell<Mutex<PaperCounter>> = RefCell::new(Mutex::new(PaperCounter::default()));
 
-    pub static ARTICLES: RefCell<StableBTreeMap<ArticleId, ArticleDao<UserPrincipal>, Memory>> = RefCell::new(
+    pub static PAPERS: RefCell<StableBTreeMap<PaperId, PaperDao<UserPrincipal>, Memory>> = RefCell::new(
         StableBTreeMap::init(
             MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(5))),
         )
@@ -78,16 +80,19 @@ thread_local! {
 fn pre_upgrade() {
     use crate::log;
 
-    // Save USER_PRINCIPALS, USER_IDS, and ARTICLE_COUNTER to stable storage.
-    let save_result = ARTICLE_COUNTER.with_borrow(|article_counter| {
-        USER_PRINCIPALS.with_borrow(|user_principals| {
-            USER_IDS.with_borrow(|user_ids| {
-                // Save all three structures in a tuple
-                ic_cdk::storage::stable_save((
-                    *article_counter.lock().unwrap(),
-                    user_principals.clone(),
-                    user_ids.clone()
-                ))
+    // Save USER_PRINCIPALS, USER_IDS, and PAPER_COUNTER to stable storage.
+    let save_result = PAPER_COUNTER.with_borrow(|paper_counter| {
+        USER_EXISTENCE.with_borrow(|user_existence| {
+            USER_PRINCIPALS.with_borrow(|user_principals| {
+                USER_IDS.with_borrow(|user_ids| {
+                    // Save all three structures in a tuple
+                    ic_cdk::storage::stable_save((
+                        *paper_counter.lock().unwrap(),
+                        user_existence.clone(),
+                        user_principals.clone(),
+                        user_ids.clone()
+                    ))
+                })
             })
         })
     });
@@ -95,7 +100,7 @@ fn pre_upgrade() {
     // Handle error gracefully, avoiding unwrap()
     match save_result {
         Ok(_) => {
-            ic_cdk::print("Successfully saved ARTICLE_COUNTER, USER_PRINCIPALS, and USER_IDS to stable storage");
+            ic_cdk::print("Successfully saved PAPER_COUNTER, USER_EXISTENCE, USER_PRINCIPALS, and USER_IDS to stable storage");
         },
         Err(e) => {
             ic_cdk::print(format!("Failed to save data to stable storage: {:?}", e));
@@ -116,15 +121,20 @@ fn post_upgrade() {
 
     // Load both USER_PRINCIPALS and USER_IDS maps from stable storage.
     let restore_result = ic_cdk::storage::stable_restore::<
-        (ArticleCounter, HashMap<UserId, UserPrincipal>, HashMap<UserPrincipal, UserId>)
+        (PaperCounter, HashSet<UserPrincipal>, HashMap<UserId, UserPrincipal>, HashMap<UserPrincipal, UserId>)
     >();
 
     // Handle error gracefully, avoiding unwrap()
     match restore_result {
-        Ok((old_article_counter, old_user_principals, old_user_ids)) => {
-            // Restore ARTICLE_COUNTER
-            ARTICLE_COUNTER.with_borrow_mut(|counter| {
-                *counter = Mutex::new(old_article_counter);
+        Ok((old_paper_counter, old_user_existence, old_user_principals, old_user_ids)) => {
+            // Restore PAPER_COUNTER
+            PAPER_COUNTER.with_borrow_mut(|counter| {
+                *counter = Mutex::new(old_paper_counter);
+            });
+
+            // Restore USER_EXISTENCE
+            USER_EXISTENCE.with_borrow_mut(|map| {
+                *map = old_user_existence;
             });
 
             // Restore USER_PRINCIPALS
@@ -137,7 +147,7 @@ fn post_upgrade() {
                 *map = old_user_ids;
             });
 
-            ic_cdk::print("Successfully restored ARTICLE_COUNTER, USER_PRINCIPALS, and USER_IDS from stable storage");
+            ic_cdk::print("Successfully restored PAPER_COUNTER, USER_EXISTENCE, USER_PRINCIPALS, and USER_IDS from stable storage");
         },
         Err(e) => {
             ic_cdk::print(format!("Failed to restore data from stable storage: {:?}", e));
@@ -151,23 +161,36 @@ fn post_upgrade() {
                 map.clear();
             });
 
-            // Restore ARTICLE_COUNTER
-            ARTICLE_COUNTER.with_borrow_mut(|counter| {
+            USER_EXISTENCE.with_borrow_mut(|map| {
+                map.clear();
+            });
+
+            // Restore PAPER_COUNTER
+            PAPER_COUNTER.with_borrow_mut(|counter| {
                 *counter = {
                     Mutex::new(
-                        ARTICLES.with_borrow(|articles| {
-                            match articles.keys().last() {
+                        PAPERS.with_borrow(|papers| {
+                            match papers.keys().last() {
                                 Some(key) => {
-                                    ArticleCounter {
+                                    PaperCounter {
                                         last_generated_months: key.months(),
                                         count_in_month: key.number(),
                                     }
                                 },
-                                None => ArticleCounter::default()
+                                None => PaperCounter::default()
                             }
                         })
                     )
                 };
+            });
+
+            // Repopulate USER_EXISTENCE with USERS
+            USERS.with_borrow(|users| {
+                USER_EXISTENCE.with_borrow_mut(|map| {
+                    for user_id in users.keys() {
+                        map.insert(user_id);
+                    }
+                });
             });
 
             // Repopulate USER_PRINCIPALS from backup if available
@@ -188,7 +211,7 @@ fn post_upgrade() {
                 });
             });
 
-            ic_cdk::print("Restored ARTICLE_COUNTER, USER_PRINCIPALS, and USER_IDS from backups");
+            ic_cdk::print("Restored PAPER_COUNTER, USER_EXISTENCE, USER_PRINCIPALS, and USER_IDS from backups");
         }
     }
 }
