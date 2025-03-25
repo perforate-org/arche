@@ -1,5 +1,7 @@
 # Arche
 
+[日本語版](README.ja.md)
+
 Arche is a decentralized academic paper publishing platform built on the Internet Computer blockchain.
 
 ## Features
@@ -12,7 +14,7 @@ Arche is a decentralized academic paper publishing platform built on the Interne
 
 ## Architecture
 
-The project follows Clean Architecture principles with distinct layers:
+The project follows Clean Architecture principles with distinct layers (see [detailed architecture documentation](architecture.md)):
 
 ```
 ┌───────────────────┐
