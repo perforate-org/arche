@@ -12,7 +12,7 @@ Archeは、Internet Computerブロックチェーン上に構築された分散�
 
 ## アーキテクチャ
 
-このプロジェクトはクリーンアーキテクチャの原則に従い、以下の層に分かれています：
+このプロジェクトはクリーンアーキテクチャの原則に従い、以下の層に分かれています:
 
 ```
 ┌───────────────────┐
@@ -32,13 +32,13 @@ Archeは、Internet Computerブロックチェーン上に構築された分散�
 
 ## 使用技術
 
-- バックエンド：
+- バックエンド:
 
   - Rust
   - Internet Computer (ICP)
   - Candid Interface Description Language (IDL)
 
-- フロントエンド：
+- フロントエンド:
   - SolidJS
   - TypeScript
   - TanStack Router
@@ -75,15 +75,15 @@ Archeは、Internet Computerブロックチェーン上に構築された分散�
 
 ### 開発環境のセットアップ
 
-1. リポジトリをフォークしてクローンします：
+1. リポジトリをフォークしてクローンします:
 
 ```bash
-# まず、 GitHubでリポジトリをフォークし、あなたのリポジトリURLを使用してクローンします：
+# まず、 GitHubでリポジトリをフォークし、あなたのリポジトリURLを使用してクローンします:
 git clone <repository-url>
 cd arche
 ```
 
-2. 依存関係をインストールします：
+2. 依存関係をインストールします:
 
 ```bash
 # Rust 依存関係のインストール
@@ -93,7 +93,7 @@ cargo build
 pnpm install
 ```
 
-3. 開発環境を起動します：
+3. 開発環境を起動します:
 
 ```bash
 # Internet Computer ローカルネットワークを起動
@@ -110,7 +110,7 @@ pnpm start
 
 ## 開発ワークフロー
 
-1. Rust バックエンドの変更：
+1. Rust バックエンドの変更:
 
 ```bash
 cargo build
@@ -119,7 +119,7 @@ cargo test
 dfx deps pull && dfx deps init --argument '(null)' internet-identity && dfx deps deploy && dfx deploy backend
 ```
 
-2. フロントエンドの変更：
+2. フロントエンドの変更:
 
 ```bash
 pnpm start   # 開発サーバー
@@ -127,7 +127,7 @@ pnpm build   # プロダクションビルド
 pnpm test    # テストの実行
 ```
 
-3. Candid バインディングの更新：
+3. Candid バインディングの更新:
 
 ```bash
 pnpm generate
