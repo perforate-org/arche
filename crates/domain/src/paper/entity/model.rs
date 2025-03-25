@@ -1,9 +1,11 @@
-use crate::{paper::{PaperCategory, PaperStatus, PaperTitle, Citation}, user::UserPrimaryKey};
+use crate::{paper::{repository::PaperRepository, Citation, PaperCategory, PaperContent, PaperId, PaperStatus, PaperTitle}, user::UserPrimaryKey};
 use super::dao::{PaperDao, PaperDaoVersion, V1};
 use util::time::now;
 
 #[derive(Clone, Debug)]
 pub struct Paper<K: UserPrimaryKey> {
+    /// The unique identifier of the paper
+    pub id: PaperId,
     /// The lead author of the paper
     pub lead_author: K,
     /// Co-authors of the paper, if any
@@ -13,7 +15,7 @@ pub struct Paper<K: UserPrimaryKey> {
     /// Abstract of the paper
     pub ab: String,
     /// Main content of the paper in Typst format
-    pub content: String,
+    pub content: PaperContent,
     /// Categories this paper belongs to
     pub categories: Vec<PaperCategory>,
     /// Tags for better searchability
@@ -36,22 +38,20 @@ impl<K: UserPrimaryKey> Paper<K> {
     /// Creates a new draft paper
     pub fn new_draft(
         lead_author: K,
-        title: PaperTitle,
-        ab: String,
-        content: String,
-        categories: Vec<PaperCategory>,
-        tags: Vec<String>,
+        repository: &mut impl PaperRepository,
     ) -> Self {
         let now = now();
+        let id = repository.generate_id();
 
         Self {
+            id,
             lead_author,
             co_authors: Vec::new(),
-            title,
-            ab,
-            content,
-            categories,
-            tags,
+            title: PaperTitle::new("New Paper").unwrap(),
+            ab: String::new(),
+            content: PaperContent::default(),
+            categories: vec![],
+            tags: vec![],
             status: PaperStatus::Draft,
             created_at: now,
             updated_at: now,
@@ -85,10 +85,11 @@ impl<K: UserPrimaryKey> Paper<K> {
     }
 }
 
-impl<K: UserPrimaryKey> From<PaperDao<K>> for Paper<K> {
-    fn from(paper_dao: PaperDao<K>) -> Self {
+impl<K: UserPrimaryKey> Paper<K> {
+    pub fn from_dao(paper_dao: PaperDao<K>, id: PaperId) -> Self {
         match paper_dao.version {
             PaperDaoVersion::V1(v1) => Paper {
+                id,
                 lead_author: v1.lead_author,
                 co_authors: v1.co_authors,
                 title: v1.title,

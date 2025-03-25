@@ -24,8 +24,6 @@ impl Response for usize {}
 impl Response for String {}
 
 impl Response for Principal {}
-impl Response for UserId {}
-impl Response for PaperId {}
 
 impl Response for User {}
 impl Response for Paper {}

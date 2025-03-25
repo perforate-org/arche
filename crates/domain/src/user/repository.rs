@@ -1,5 +1,5 @@
 use crate::user::{
-    value_object::{UserId, UserPrimaryKey},
+    value_object::{UserId, UserPrimaryKey, UserName},
     entity::model::User,
 };
 use thiserror::Error;
@@ -15,7 +15,7 @@ pub enum UserRepositoryError {
     PrimaryKeyAlreadyExists,
 }
 
-/// Repository trait for read-only User entity operations.
+/// Repository trait for User entity operations.
 /// Provides methods to find users and check for existence without modifying state.
 pub trait UserRepository {
     type PrimaryKey: UserPrimaryKey;
@@ -53,6 +53,30 @@ pub trait UserRepository {
     /// * `Some(User)` if the user was found
     /// * `None` if no user with the given primary key exists
     fn get_by_primary_key(&self, primary_key: &Self::PrimaryKey) -> Option<User>;
+
+    /// Gets a user's name by their unique ID.
+    ///
+    /// # Arguments
+    ///
+    /// * `user_id` - The user ID to search for
+    ///
+    /// # Returns
+    ///
+    /// * `Some(UserName)` if the user's name was found
+    /// * `None` if no user with the given ID exists
+    fn get_name(&self, user_id: &UserId) -> Option<UserName>;
+
+    /// Gets a user's name by their primary key.
+    ///
+    /// # Arguments
+    ///
+    /// * `primary_key` - The user primary key to search for
+    ///
+    /// # Returns
+    ///
+    /// * `Some(UserName)` if the user's name was found
+    /// * `None` if no user with the given primary key exists
+    fn get_name_by_primary_key(&self, primary_key: &Self::PrimaryKey) -> Option<UserName>;
 
     /// Checks if a user with the given primary key is contained.
     ///

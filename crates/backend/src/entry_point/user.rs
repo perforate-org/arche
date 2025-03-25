@@ -1,6 +1,6 @@
 use crate::{
     controller::user::UserController,
-    infrastructure::user::repository::StableUserRepository,
+    infrastructure::{user::repository::StableUserRepository, paper::repository::StablePaperRepository},
 };
 use domain::user::{
     entity::dto::User,
@@ -10,9 +10,10 @@ use ic_cdk_macros::*;
 use interface::user::*;
 use super::guards::{caller_is_user, caller_is_not_anonymous};
 
-fn controller() -> UserController<StableUserRepository, UserPrincipal> {
-    UserController::<StableUserRepository, UserPrincipal>::new(
-        StableUserRepository::new()
+fn controller() -> UserController<StableUserRepository, StablePaperRepository, UserPrincipal> {
+    UserController::<StableUserRepository, StablePaperRepository, UserPrincipal>::new(
+        StableUserRepository::new(),
+        StablePaperRepository::new(),
     )
 }
 

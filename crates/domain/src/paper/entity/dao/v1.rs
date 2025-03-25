@@ -1,4 +1,4 @@
-use crate::{paper::{PaperCategory, PaperStatus, PaperTitle, Citation}, user::UserPrimaryKey};
+use crate::{paper::{PaperCategory, PaperStatus, PaperTitle, Citation, PaperContent}, user::UserPrimaryKey};
 use candid::CandidType;
 use serde::{Deserialize, Serialize};
 
@@ -12,8 +12,8 @@ pub struct V1<K: UserPrimaryKey> {
     pub title: PaperTitle,
     /// Abstract of the paper
     pub ab: String,
-    /// Main content of the paper in Typst format
-    pub content: String,
+    /// Main content of the paper
+    pub content: PaperContent,
     /// Categories this paper belongs to
     pub categories: Vec<PaperCategory>,
     /// Tags for better searchability

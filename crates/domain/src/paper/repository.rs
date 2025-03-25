@@ -1,9 +1,9 @@
 use crate::{
-    paper::{PaperId, entity::model::Paper},
+    paper::{PaperId, PaperSummary, PaperTitle, entity::model::Paper},
     user,
 };
 
-/// Repository trait for read-only paper operations.
+/// Repository trait for paper operations.
 /// Provides methods to retrieve papers and check for existence.
 pub trait PaperRepository {
     type UserPrimaryKey: user::UserPrimaryKey;
@@ -20,6 +20,30 @@ pub trait PaperRepository {
     /// * `None` - If the paper doesn't exist
     fn get(&self, paper_id: &PaperId) -> Option<Paper<Self::UserPrimaryKey>>;
 
+    /// Retrieves a summary of an paper by its ID.
+    ///
+    /// # Arguments
+    ///
+    /// * `paper_id` - The unique identifier of the paper to retrieve
+    ///
+    /// # Returns
+    ///
+    /// * `Some(PaperSummary)` - The requested paper summary if found
+    /// * `None` - If the paper doesn't exist
+    fn get_summary(&self, paper_id: &PaperId) -> Option<PaperSummary<Self::UserPrimaryKey>>;
+
+    /// Retrieves the title of an paper by its ID.
+    ///
+    /// # Arguments
+    ///
+    /// * `paper_id` - The unique identifier of the paper to retrieve
+    ///
+    /// # Returns
+    ///
+    /// * `Some(PaperTitle)` - The requested paper title if found
+    /// * `None` - If the paper doesn't exist
+    fn get_title(&self, paper_id: &PaperId) -> Option<PaperTitle>;
+
     /// Checks if an paper with the given ID exists in the repository.
     ///
     /// # Arguments
@@ -31,6 +55,13 @@ pub trait PaperRepository {
     /// * `true` - If the paper exists
     /// * `false` - If the paper doesn't exist
     fn contains(&self, paper_id: &PaperId) -> bool;
+
+    /// Iterates over all paper summaries in the repository.
+    ///
+    /// # Returns
+    ///
+    /// An iterator over all paper summaries in the repository.
+    fn iter_summary(&self) -> impl Iterator<Item = PaperSummary<Self::UserPrimaryKey>>;
 
     /// Inserts or updates an paper in the repository.
     ///

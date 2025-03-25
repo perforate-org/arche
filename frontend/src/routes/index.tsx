@@ -6,9 +6,6 @@ export const Route = createFileRoute("/")({
 });
 
 function App() {
-  let userId = "anonymous";
-  let paperId = "2025-01-0001";
-
   return (
     <main class="flex min-h-screen flex-col items-center justify-center bg-stone-100 px-8 text-slate-950 md:px-16 dark:bg-stone-900 dark:text-slate-50">
       <Title>Arche: for Preprints</Title>
@@ -26,11 +23,8 @@ function App() {
         <h1 class="mb-4 text-6xl font-bold">Arche</h1>
         <p class="mb-8 font-serif text-xl">Decentralized Preprint Server</p>
         <div class="space-x-4">
-          <Link to={"/users/" + userId} class="btn btn-sm">
-            Enter as John Doe
-          </Link>
-          <Link to={"/abs/" + paperId} class="btn btn-sm btn-primary">
-            Explore Sample Paper
+          <Link to={"/papers"} class="btn btn-sm btn-primary">
+            Check Papers
           </Link>
         </div>
       </div>

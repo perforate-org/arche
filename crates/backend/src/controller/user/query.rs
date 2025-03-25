@@ -1,16 +1,20 @@
-use domain::user::{
-    entity::dto,
-    repository::UserRepository,
-    UserId, UserPrimaryKey, UserPrincipal
+use domain::{
+    user::{
+        entity::dto,
+        repository::UserRepository,
+        UserId, UserPrimaryKey, UserPrincipal
+    },
+    paper::repository::PaperRepository,
 };
 use super::UserController;
 use interface::user::*;
 use ic_cdk::api::caller;
 use std::str::FromStr;
 
-impl<R, K> UserController<R, K>
+impl<R, P, K> UserController<R, P, K>
 where
     R: UserRepository<PrimaryKey = UserPrincipal> + Clone,
+    P: PaperRepository + Clone,
     K: UserPrimaryKey,
 {
     pub fn fetch(&self, user_id: &str) -> Result<dto::User, String> {
@@ -23,7 +27,7 @@ where
                 None => return Err(format!("User not found by principal: {}", principal_str)),
             };
 
-            Ok(user.into())
+            Ok(dto::User::from_model(user, &self.paper_repository))
         } else {
             let user_id = UserId::new(user_id).map_err(|_| format!("Invalid user ID: {}", user_id))?;
 
@@ -32,7 +36,7 @@ where
                 None => return Err(format!("User not found: {}", user_id)),
             };
 
-            Ok(user.into())
+            Ok(dto::User::from_model(user, &self.paper_repository))
         }
     }
 
@@ -44,7 +48,7 @@ where
             None => return Err(format!("User not found: {}", caller)),
         };
 
-        Ok(user.into())
+        Ok(dto::User::from_model(user, &self.paper_repository))
     }
 
     pub fn is_registered(&self) -> bool {

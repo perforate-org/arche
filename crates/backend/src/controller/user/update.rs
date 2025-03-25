@@ -1,16 +1,20 @@
-use domain::user::{
-    UserPrimaryKey, UserPrincipal,
-    repository::UserRepository,
-    service::UserService,
-    entity::dto
+use domain::{
+    user::{
+        UserPrimaryKey, UserPrincipal,
+        repository::UserRepository,
+        service::UserService,
+        entity::dto
+    },
+    paper::repository::PaperRepository
 };
 use super::UserController;
 use interface::user::*;
 use ic_cdk::api::{caller, print};
 
-impl<R, K> UserController<R, K>
+impl<R, P, K> UserController<R, P, K>
 where
     R: UserRepository<PrimaryKey = UserPrincipal> + Clone,
+    P: PaperRepository + Clone,
     K: UserPrimaryKey,
 {
     pub fn register(&mut self) -> Result<(), String> {

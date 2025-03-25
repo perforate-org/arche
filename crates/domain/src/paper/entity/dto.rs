@@ -1,4 +1,6 @@
-use crate::{paper::{PaperCategory, PaperStatus, PaperTitle, Citation}, user::{UserId, UserName}};
+use std::str::FromStr;
+
+use crate::{paper::{PaperCategory, PaperStatus, PaperTitle, Citation, PaperContent, PaperId}, user::{UserId, UserName}};
 use serde::Deserialize;
 #[cfg(feature = "entity")]
 use crate::{
@@ -8,6 +10,8 @@ use crate::{
 
 #[derive(Clone, Debug, candid::CandidType, Deserialize)]
 pub struct Paper {
+    /// Unique identifier for the paper
+    pub id: String,
     /// The lead author of the paper
     pub lead_author: (String, UserName),
     /// Co-authors of the paper, if any
@@ -16,8 +20,8 @@ pub struct Paper {
     pub title: PaperTitle,
     /// Abstract of the paper
     pub ab: String,
-    /// Main content of the paper in Typst format
-    pub content: String,
+    /// Main content of the paper
+    pub content: PaperContent,
     /// Categories this paper belongs to
     pub categories: Vec<PaperCategory>,
     /// Tags for better searchability
@@ -38,7 +42,7 @@ pub struct Paper {
 
 #[cfg(feature = "entity")]
 impl Paper {
-    pub fn from_model<T: UserRepository>(paper: model::Paper<T::PrimaryKey>, user_repo: &T) -> Option<Self> {
+    pub fn from_model<T: UserRepository>(paper: model::Paper<T::PrimaryKey>, user_repo: &T, id: PaperId) -> Option<Self> {
         let lead_author = match user_repo.get_user_id(&paper.lead_author) {
             Some(id) => (id.to_string(), user_repo.get_by_primary_key(&paper.lead_author)?.name),
             None => (format!("p_{}", paper.lead_author), user_repo.get_by_primary_key(&paper.lead_author)?.name),
@@ -53,6 +57,7 @@ impl Paper {
         }).collect::<Option<Vec<_>>>()?;
 
         Some(Paper {
+            id: id.to_string(),
             lead_author,
             co_authors,
             title: paper.title,
@@ -70,6 +75,7 @@ impl Paper {
     }
 
     pub fn into_model<T: UserRepository>(&self, user_repo: &T) -> Option<model::Paper<T::PrimaryKey>> {
+        let id = PaperId::from_str(&self.id).ok()?;
         let lead_author = if let Some(primary_key_str) = self.lead_author.0.strip_prefix("p_") {
             primary_key_str.parse().ok()?
         } else {
@@ -88,6 +94,7 @@ impl Paper {
             .collect::<Option<Vec<_>>>()?;
 
         Some(model::Paper {
+            id,
             lead_author,
             co_authors,
             title: self.title.clone(),
@@ -103,4 +110,10 @@ impl Paper {
             citations: self.citations.clone(),
         })
     }
+}
+
+#[derive(Clone, Debug, candid::CandidType, Deserialize)]
+pub struct PaperIdTitle {
+    pub id: String,
+    pub title: String,
 }

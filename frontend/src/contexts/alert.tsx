@@ -106,7 +106,7 @@ export function AlertStack() {
   };
 
   return (
-    <div class="pointer-events-none fixed top-0 left-0 z-50 w-full space-y-2 p-4">
+    <div class="pointer-events-none fixed top-0 left-0 z-50 mt-12 w-full space-y-2 p-4">
       <For each={alerts()}>
         {(alert) => (
           <AlertItem alert={alert} onRemove={() => handleRemove(alert)} />

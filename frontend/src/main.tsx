@@ -4,16 +4,10 @@ import { RouterProvider, createRouter } from "@tanstack/solid-router";
 import { render } from "solid-js/web";
 import { AuthProvider, useAuth } from "./contexts/auth";
 import { GlobalLoadingIndicator } from "./components/loadingIndicator";
-import type { AuthStoreType } from "./contexts/auth";
 import { AlertsProvider } from "./contexts/alert";
 
 import { routeTree } from "./routeTree.gen";
 import "./styles.css";
-
-export interface RouterContext {
-  queryClient: QueryClient;
-  auth: AuthStoreType;
-}
 
 const queryClient = new QueryClient();
 

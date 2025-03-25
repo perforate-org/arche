@@ -1,19 +1,23 @@
 import { Title } from "@solidjs/meta";
-import { createMemo, createEffect } from "solid-js";
+import { createMemo, createEffect, onCleanup, onMount } from "solid-js";
 import { createFileRoute, redirect } from "@tanstack/solid-router";
 import { queryOptions, createQuery } from "@tanstack/solid-query";
-import { matchResult } from "../../utils/matchResult";
+import { matchResult } from "../../utils/result";
 import type { AuthStoreType } from "../../contexts/auth";
 import type { User } from "../../declarations/backend/backend.did";
 import { createForm } from "@tanstack/solid-form";
 import type { AnyFieldApi } from "@tanstack/solid-form";
-import { fromOption } from "../../utils/matchOption";
+import { fromOption } from "../../utils/option";
 import { validateId, validateName } from "../../features/account";
 import { pushAlert } from "../../contexts/alert";
+import type { Principal } from "@dfinity/principal";
 
-const accountQueryOptions = (auth: AuthStoreType) =>
+const accountQueryOptions = (
+  auth: AuthStoreType,
+  principal: Principal | null,
+) =>
   queryOptions({
-    queryKey: ["account", "settings"],
+    queryKey: ["account", "settings", { principal }],
     queryFn: async () => {
       return await auth.backend.fetch_caller();
     },
@@ -39,28 +43,39 @@ export const Route = createFileRoute("/account/settings")({
     }
   },
   loader: ({ context }) =>
-    context.queryClient.ensureQueryData(accountQueryOptions(context.auth)),
+    context.queryClient.ensureQueryData(
+      accountQueryOptions(context.auth, context.auth.principal),
+    ),
   component: RouteComponent,
 });
 
 function RouteComponent() {
   const context = Route.useRouteContext();
-  const userQuery = createQuery(() => accountQueryOptions(context().auth));
+  const userQuery = createQuery(() =>
+    accountQueryOptions(context().auth, context().auth.principal),
+  );
   const data = createMemo(() => userQuery.data);
 
   return (
     <main class="min-h-screen">
-      {matchResult(data()!, {
-        ok: (user) => <Account user={user} auth={context().auth} />,
-        err: (err) => (
-          <>
-            <Title>Error | Arche</Title>
-
-            <h1>Error</h1>
-            <p>{err}</p>
-          </>
-        ),
-      })}
+      {context().auth.isAuthenticated ? (
+        data() ? (
+          matchResult(data()!, {
+            ok: (user) => <Account user={user} auth={context().auth} />,
+            err: (err) => (
+              <>
+                <Title>Error | Arche</Title>
+                <h1>Error</h1>
+                <p>{err}</p>
+              </>
+            ),
+          })
+        ) : (
+          <p>Loading...</p>
+        )
+      ) : (
+        <p>Please log in to access your account settings.</p>
+      )}
     </main>
   );
 }
@@ -82,6 +97,14 @@ function Account({ user, auth }: { user: User; auth: AuthStoreType }) {
       contentBorderRef.style.height = `${Math.max(menuHeight, contentHeight)}px`;
     }
   };
+
+  onMount(() => {
+    window.addEventListener("resize", updateBorderHeight);
+  });
+
+  onCleanup(() => {
+    window.removeEventListener("resize", updateBorderHeight);
+  });
 
   createEffect(() => {
     updateBorderHeight();

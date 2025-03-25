@@ -2,13 +2,14 @@ import { createSignal, onMount } from "solid-js";
 import { Account } from "./header/account";
 import { Link } from "@tanstack/solid-router";
 
+const threshold = 24;
+
 export function Header() {
   const [isVisible, setIsVisible] = createSignal(true);
   const [lastScrollY, setLastScrollY] = createSignal(0);
 
   const handleScroll = () => {
     const currentScrollY = window.scrollY;
-    const threshold = 10;
 
     if (Math.abs(currentScrollY - lastScrollY()) > threshold) {
       setIsVisible(currentScrollY < lastScrollY() || currentScrollY <= 0);

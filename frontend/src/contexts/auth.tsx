@@ -5,7 +5,7 @@ import { createEffect, createContext, useContext } from "solid-js";
 import type { Component, JSXElement } from "solid-js";
 import { createStore } from "solid-js/store";
 import { canisterId, createActor, backend } from "../declarations/backend";
-import { matchResult } from "../utils/matchResult";
+import { matchResult } from "../utils/result";
 import { router } from "../main";
 import { pushAlert } from "./alert";
 
@@ -84,12 +84,16 @@ export function useAuthClient(
               ok: () => {
                 pushAlert({
                   type: "success",
-                  message: "Welcome to Arche.",
+                  message:
+                    "Welcome to Arche! Your account has been successfully created.",
                 });
-                pushAlert({
-                  type: "info",
-                  message: "You can set up an ID and name (optional).",
-                });
+                setTimeout(() => {
+                  pushAlert({
+                    type: "info",
+                    message:
+                      "Set up your account: update your ID and name if desired.",
+                  });
+                }, 1500);
                 routerProp.navigate({
                   to: "/account/settings",
                 });

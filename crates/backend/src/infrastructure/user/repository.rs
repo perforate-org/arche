@@ -1,4 +1,4 @@
-use crate::infrastructure::{USERS, USER_EXISTENCE, USER_IDS, USER_IDS_BACKUP, USER_PRINCIPALS, USER_PRINCIPALS_BACKUP};
+use crate::infrastructure::{USERS, USER_EXISTENCE, USER_IDS, USER_IDS_BACKUP, USER_PRINCIPALS, USER_PRINCIPALS_BACKUP, USER_NAMES};
 use domain::user::{
     entity::model::User, value_object::{UserId, UserPrimaryKey, UserPrincipal},
 };
@@ -29,6 +29,15 @@ impl UserRepository for StableUserRepository {
         USERS.with_borrow(|map| map.get(&primary_key.as_principal())).map(|u| User::from_dao(u, primary_key, self))
     }
 
+    fn get_name(&self, user_id: &UserId) -> Option<domain::UserName> {
+        let key = self.get_primary_key(user_id)?;
+        self.get_name_by_primary_key(&key)
+    }
+
+    fn get_name_by_primary_key(&self, primary_key: &Self::PrimaryKey) -> Option<domain::UserName> {
+        USER_NAMES.with_borrow(|map| map.get(primary_key).cloned())
+    }
+
     fn contains(&self, primary_key: &UserPrincipal) -> bool {
         USER_EXISTENCE.with_borrow(|map| map.contains(&primary_key.as_principal()))
     }
@@ -52,6 +61,7 @@ impl UserRepository for StableUserRepository {
             return Err(UserRepositoryError::PrimaryKeyAlreadyExists);
         }
 
+        USER_NAMES.with_borrow_mut(|names| names.insert(principal, user.name.clone()));
         USERS.with_borrow_mut(|map| map.insert(principal, user.into()));
         USER_EXISTENCE.with_borrow_mut(|set| set.insert(principal));
 
@@ -64,6 +74,7 @@ impl UserRepository for StableUserRepository {
         }
 
         self.update_id(primary_key, user.id)?;
+        USER_NAMES.with_borrow_mut(|names| names.insert(primary_key.as_principal(), user.name.clone()));
         USERS.with_borrow_mut(|map| map.insert(primary_key.as_principal(), user.into()));
 
         Ok(())
@@ -132,6 +143,7 @@ impl UserRepository for StableUserRepository {
             USER_PRINCIPALS.with_borrow_mut(|map| map.remove(&id)).ok_or(UserRepositoryError::NotFound)?;
             USER_PRINCIPALS_BACKUP.with_borrow_mut(|map| map.remove(&id)).ok_or(UserRepositoryError::NotFound)?;
         }
+        USER_NAMES.with_borrow_mut(|names| names.remove(&principal));
         USERS.with_borrow_mut(|map| map.remove(&principal).ok_or(UserRepositoryError::NotFound)).map(|u| {
             User::from_dao_with_id(u, id)
         })

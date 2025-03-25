@@ -1,12 +1,29 @@
 type Citation = variant { Url : text; Paper : PaperId; Other : text };
+type ContentFormat = variant {
+  Pdf;
+  Tex;
+  Latex;
+  Html;
+  Text;
+  Satysfi;
+  Markdown;
+  Typst;
+};
+type ContentSource = variant {
+  Raw : blob;
+  Http : text;
+  Ipfs : text;
+  Arweave : text;
+};
 type Paper = record {
   ab : text;
+  id : text;
   categories : vec PaperCategory;
   status : PaperStatus;
   title : text;
   updated_at : nat64;
   references : vec Citation;
-  content : text;
+  content : PaperContent;
   cover_image : opt text;
   tags : vec text;
   lead_author : record { text; text };
@@ -23,8 +40,19 @@ type PaperCategory = variant {
   Programming;
   Other : text;
 };
+type PaperContent = record {
+  content_format : ContentFormat;
+  content_source : ContentSource;
+};
 type PaperId = record { version : nat16; number : nat32; months : nat16 };
+type PaperIdTitle = record { id : text; title : text };
 type PaperStatus = variant { UnderReview; Draft; Archived; Published };
+type PaperSummaryDto = record {
+  id : text;
+  title : text;
+  lead_author_name : text;
+  lead_author_id : text;
+};
 type Result = variant { Ok : User; Err : text };
 type Result_1 = variant { Ok : Paper; Err : text };
 type Result_2 = variant { Ok; Err : text };
@@ -32,15 +60,19 @@ type Result_3 = variant { Ok : bool; Err : text };
 type User = record {
   id : opt text;
   name : text;
-  lead_authored_papers : vec PaperId;
-  co_authored_papers : vec PaperId;
+  lead_authored_papers : vec PaperIdTitle;
+  co_authored_papers : vec PaperIdTitle;
 };
 service : {
+  create_draft : () -> (text);
+  fetch_all_paper_summaries : () -> (vec PaperSummaryDto) query;
   fetch_caller : () -> (Result) query;
   fetch_paper : (text) -> (Result_1) query;
+  fetch_paper_as_author : (text) -> (Result_1) query;
   fetch_user : (text) -> (Result) query;
   is_registered : () -> (bool) query;
   register_user : () -> (Result_2);
   update_caller : (User) -> (Result_2);
+  update_paper : (Paper) -> (Result_2);
   user_exists_by_id : (text) -> (Result_3) query;
 }

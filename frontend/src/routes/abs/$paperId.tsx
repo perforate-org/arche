@@ -1,10 +1,12 @@
 import { Title } from "@solidjs/meta";
-import { createMemo } from "solid-js";
+import { createMemo, createEffect, onCleanup, onMount } from "solid-js";
 import { createFileRoute, Link } from "@tanstack/solid-router";
 import { queryOptions, createQuery } from "@tanstack/solid-query";
 import type { JSXElement } from "solid-js";
-import { matchResult } from "../../utils/matchResult";
+import { matchResult } from "../../utils/result";
 import { backend } from "../../declarations/backend";
+import type { Paper } from "../../declarations/backend/backend.did";
+import { getContent } from "../../features/paper";
 
 const paperQueryOptions = (actor: typeof backend, paperId: string) =>
   queryOptions({
@@ -33,33 +35,9 @@ function RouteComponent(): JSXElement {
   const data = createMemo(() => paperQuery.data);
 
   return (
-    <main class="mt-12 grid place-content-center">
+    <main class="grid place-content-center">
       {matchResult(data()!, {
-        ok: (paper) => (
-          <>
-            <Title>{paper.title} | Arche</Title>
-
-            <div class="grid w-screen max-w-[72rem] auto-rows-min grid-cols-5 gap-4 p-8">
-              <article class="col-span-4 grid grid-cols-5 gap-4 rounded-lg border border-[0.5px] border-gray-500 px-8 py-4">
-                <div class="col-span-5 h-auto">
-                  <h1 class="text-2xl font-bold">{paper.title}</h1>
-                  <Link
-                    class="text-blue-600 transition-colors duration-100 hover:underline active:text-blue-400 active:underline dark:text-blue-500 dark:active:text-blue-700"
-                    to={"/users/" + paper.lead_author[0]}
-                  >
-                    {paper.lead_author[1]}
-                  </Link>
-                  <p class="text-gray-600">{paper.ab}</p>
-                </div>
-                <div class="col-span-5">
-                  <h2 class="text-xl font-bold">Content</h2>
-                  <p class="text-gray-600">PDF</p>
-                  <p class="text-gray-600">Typst</p>
-                </div>
-              </article>
-            </div>
-          </>
-        ),
+        ok: (paper) => <Abstract paper={paper} />,
         err: (err) => (
           <>
             <Title>Error | Arche</Title>
@@ -69,5 +47,75 @@ function RouteComponent(): JSXElement {
         ),
       })}
     </main>
+  );
+}
+
+function Abstract({ paper }: { paper: Paper }) {
+  let articleRef: HTMLElement | undefined;
+  let articleBorderRef: HTMLDivElement | undefined;
+
+  function updateHeight() {
+    if (articleRef && articleBorderRef) {
+      articleBorderRef.style.height = `${articleRef.offsetHeight}px`;
+    }
+  }
+
+  onMount(() => {
+    window.addEventListener("resize", updateHeight);
+  });
+
+  onCleanup(() => {
+    window.removeEventListener("resize", updateHeight);
+  });
+
+  createEffect(() => {
+    updateHeight();
+  });
+
+  const content = getContent(paper.content);
+
+  return (
+    <>
+      <Title>{paper.title} | Arche</Title>
+
+      <div
+        class="pointer-events-none absolute inset-x-0 h-full"
+        aria-hidden="true"
+        role="presentation"
+      >
+        <div
+          ref={articleBorderRef}
+          class="absolute mt-24 w-screen border-y-[0.5px] border-slate-300 dark:border-slate-700"
+        ></div>
+      </div>
+      <div class="mx-auto flex w-screen max-w-256 px-8 md:px-16">
+        <div class="min-h-screen w-full border-x-[0.5px] border-slate-300 pt-24 pb-12 dark:border-slate-700">
+          <article
+            ref={articleRef}
+            class="flex w-full flex-1 flex-col gap-4 px-8 py-8 md:px-16 md:py-16"
+          >
+            <div class="flex flex-col gap-2">
+              <h1 class="text-3xl font-bold">{paper.title}</h1>
+              <Link
+                class="text-primary active:text-primary/50 w-fit transition duration-100 hover:underline active:underline"
+                to={"/users/$userId"}
+                params={{ userId: paper.lead_author[0] }}
+              >
+                {paper.lead_author[1]}
+              </Link>
+              <p class="text-base-content/75">{paper.ab}</p>
+            </div>
+            <div class="flex-1">
+              <h2 class="text-base-content/50 cursor-default text-2xl font-bold">
+                Content
+              </h2>
+              <div class="text-base-content my-2 flex flex-col gap-4">
+                {content}
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </>
   );
 }

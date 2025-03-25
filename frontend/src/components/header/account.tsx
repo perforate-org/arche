@@ -44,7 +44,7 @@ function AccountDropdown({ auth }: { auth: AuthStoreType }) {
       <div
         tabindex="0"
         role="button"
-        class="btn btn-xs btn-soft text-base-content/50 hover:text-base-content m-1 transition"
+        class="btn btn-xs btn-soft text-base-content/75 hover:text-base-content m-1 transition"
       >
         Account
       </div>

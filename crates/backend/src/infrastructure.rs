@@ -1,12 +1,11 @@
 use domain::{
-    user::{
-        entity::dao::UserDao,
-        value_object::{UserId, UserPrincipal}
-    },
     paper::{
         entity::dao::PaperDao,
         value_object::PaperId,
-    }
+    }, user::{
+        entity::dao::UserDao,
+        value_object::{UserId, UserPrincipal, UserName}
+    }, PaperTitle
 };
 use crate::{
     infrastructure::paper::repository::PaperCounter,
@@ -17,7 +16,7 @@ use ic_stable_structures::{
     memory_manager::{MemoryId, MemoryManager, VirtualMemory},
     DefaultMemoryImpl, StableBTreeMap, StableLog,
 };
-use std::{cell::RefCell, collections::{HashMap, HashSet}, sync::Mutex};
+use std::{cell::RefCell, collections::{HashMap, HashSet, BTreeMap}, sync::Mutex};
 
 pub mod paper;
 pub mod user;
@@ -67,6 +66,8 @@ thread_local! {
         )
     );
 
+    pub static USER_NAMES: RefCell<HashMap<UserPrincipal, UserName>> = RefCell::new(HashMap::new());
+
     pub static PAPER_COUNTER: RefCell<Mutex<PaperCounter>> = RefCell::new(Mutex::new(PaperCounter::default()));
 
     pub static PAPERS: RefCell<StableBTreeMap<PaperId, PaperDao<UserPrincipal>, Memory>> = RefCell::new(
@@ -74,6 +75,10 @@ thread_local! {
             MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(5))),
         )
     );
+
+    pub static PAPER_TITLES: RefCell<HashMap<PaperId, PaperTitle>> = RefCell::new(HashMap::new());
+
+    pub static PAPER_LEAD_AUTHORS: RefCell<BTreeMap<PaperId, UserPrincipal>> = const { RefCell::new(BTreeMap::new()) };
 }
 
 #[ic_cdk::pre_upgrade]

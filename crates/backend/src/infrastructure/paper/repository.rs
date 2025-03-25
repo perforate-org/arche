@@ -1,9 +1,9 @@
-use crate::infrastructure::{PAPER_COUNTER, PAPERS};
+use crate::infrastructure::{PAPER_COUNTER, PAPERS, PAPER_TITLES, PAPER_LEAD_AUTHORS};
 use candid::CandidType;
 use chrono::{DateTime, Datelike};
 use domain::{
     paper::{
-        PaperId,
+        PaperId, PaperSummary,
         entity::model::Paper,
         repository::PaperRepository,
     },
@@ -25,19 +25,44 @@ impl PaperRepository for StablePaperRepository {
     type UserPrimaryKey = UserPrincipal;
 
     fn get(&self, paper_id: &PaperId) -> Option<Paper<UserPrincipal>> {
-        PAPERS.with_borrow(|papers| papers.get(paper_id)).map(|a| a.into())
+        PAPERS.with_borrow(|papers| papers.get(paper_id)).map(|a| Paper::from_dao(a, *paper_id))
+    }
+
+    fn get_summary(&self, paper_id: &PaperId) -> Option<domain::paper::PaperSummary<Self::UserPrimaryKey>> {
+        let author = PAPER_LEAD_AUTHORS.with_borrow(|papers| papers.get(paper_id).copied())?;
+        Some(PaperSummary {
+            id: *paper_id,
+            lead_author: author,
+        })
+    }
+
+    fn get_title(&self, paper_id: &PaperId) -> Option<domain::PaperTitle> {
+        PAPER_TITLES.with_borrow(|papers| papers.get(paper_id).cloned())
     }
 
     fn contains(&self, paper_id: &PaperId) -> bool {
         PAPERS.with_borrow(|papers| papers.contains_key(paper_id))
     }
 
+    fn iter_summary(&self) -> impl Iterator<Item = PaperSummary<Self::UserPrimaryKey>> {
+        PAPER_LEAD_AUTHORS.with_borrow(|papers| {
+            papers.iter()
+                .map(|(id, lead_author)| PaperSummary { id: *id, lead_author: *lead_author })
+                .collect::<Vec<_>>()
+                .into_iter()
+        })
+    }
+
     fn insert(&mut self, paper_id: PaperId, paper: Paper<UserPrincipal>) -> Option<Paper<UserPrincipal>> {
-        PAPERS.with_borrow_mut(|papers| papers.insert(paper_id, paper.into())).map(|a| a.into())
+        PAPER_TITLES.with_borrow_mut(|titles| titles.insert(paper_id, paper.title.clone()));
+        PAPER_LEAD_AUTHORS.with_borrow_mut(|authors| authors.insert(paper_id, paper.lead_author));
+        PAPERS.with_borrow_mut(|papers| papers.insert(paper_id, paper.into())).map(|a| Paper::from_dao(a, paper_id))
     }
 
     fn remove(&mut self, paper_id: &PaperId) -> Option<Paper<UserPrincipal>> {
-        PAPERS.with_borrow_mut(|papers| papers.remove(paper_id)).map(|a| a.into())
+        PAPER_TITLES.with_borrow_mut(|titles| titles.remove(paper_id));
+        PAPER_LEAD_AUTHORS.with_borrow_mut(|authors| authors.remove(paper_id));
+        PAPERS.with_borrow_mut(|papers| papers.remove(paper_id)).map(|a| Paper::from_dao(a, *paper_id))
     }
 
     fn generate_id(&mut self) -> PaperId {

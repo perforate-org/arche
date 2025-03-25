@@ -1,8 +1,8 @@
-use crate::user::{
+use crate::{user::{
     entity::model::User,
     repository::{UserRepository, UserRepositoryError},
     value_object::{UserId, UserPrimaryKey},
-};
+}, PaperId};
 use hexaurl::Error as HexaUrlError;
 use thiserror::Error;
 
@@ -90,10 +90,10 @@ where
     /// # Returns
     ///
     /// A vector of optional users where Some(user) if found, None if not found
-    pub fn get_users_by_primary_key(&self, principals: &Vec<R::PrimaryKey>) -> Vec<Option<User>> {
+    pub fn get_users_by_primary_key(&self, primary_keys: &Vec<R::PrimaryKey>) -> Vec<Option<User>> {
         let mut users = Vec::new();
-        for principal in principals {
-            if let Some(user) = self.repository.get_by_primary_key(principal) {
+        for primary_key in primary_keys {
+            if let Some(user) = self.repository.get_by_primary_key(primary_key) {
                 users.push(Some(user));
             } else {
                 users.push(None);
@@ -130,5 +130,12 @@ where
         self.repository.add(primary_key, user.clone())?;
 
         Ok(user)
+    }
+
+    pub fn add_paper_as_lead_author(&mut self, primary_key: &R::PrimaryKey, paper_id: &PaperId) -> Result<(), UserServiceError> {
+        let mut user = self.repository.get_by_primary_key(primary_key).ok_or(UserServiceError::NotFound)?;
+        user.lead_authored_papers.push(*paper_id);
+        self.repository.update(primary_key, user)?;
+        Ok(())
     }
 }

@@ -20,8 +20,6 @@ impl Request for usize {}
 impl Request for String {}
 
 impl Request for Principal {}
-impl Request for UserId {}
-impl Request for PaperId {}
 
 impl Request for User {}
 impl Request for Paper {}

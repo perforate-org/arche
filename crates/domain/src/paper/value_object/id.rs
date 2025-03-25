@@ -228,6 +228,7 @@ mod ic_stable {
         };
     }
 }
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -12,6 +12,7 @@ export interface RouterContext {
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootComponent,
+  notFoundComponent: () => <div>404 Not Found</div>,
 });
 
 function RootComponent() {

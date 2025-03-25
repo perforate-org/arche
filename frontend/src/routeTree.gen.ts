@@ -17,6 +17,7 @@ import { Route as IndexImport } from './routes/index'
 import { Route as UsersUserIdImport } from './routes/users/$userId'
 import { Route as AccountSettingsImport } from './routes/account/settings'
 import { Route as AccountPaperListImport } from './routes/account/paper-list'
+import { Route as AccountEditImport } from './routes/account/edit'
 import { Route as AbsPaperIdImport } from './routes/abs/$paperId'
 
 // Create/Update Routes
@@ -54,6 +55,12 @@ const AccountSettingsRoute = AccountSettingsImport.update({
 const AccountPaperListRoute = AccountPaperListImport.update({
   id: '/account/paper-list',
   path: '/account/paper-list',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AccountEditRoute = AccountEditImport.update({
+  id: '/account/edit',
+  path: '/account/edit',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -95,6 +102,13 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof AbsPaperIdImport
       parentRoute: typeof rootRoute
     }
+    '/account/edit': {
+      id: '/account/edit'
+      path: '/account/edit'
+      fullPath: '/account/edit'
+      preLoaderRoute: typeof AccountEditImport
+      parentRoute: typeof rootRoute
+    }
     '/account/paper-list': {
       id: '/account/paper-list'
       path: '/account/paper-list'
@@ -126,6 +140,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/papers': typeof PapersRoute
   '/abs/$paperId': typeof AbsPaperIdRoute
+  '/account/edit': typeof AccountEditRoute
   '/account/paper-list': typeof AccountPaperListRoute
   '/account/settings': typeof AccountSettingsRoute
   '/users/$userId': typeof UsersUserIdRoute
@@ -136,6 +151,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/papers': typeof PapersRoute
   '/abs/$paperId': typeof AbsPaperIdRoute
+  '/account/edit': typeof AccountEditRoute
   '/account/paper-list': typeof AccountPaperListRoute
   '/account/settings': typeof AccountSettingsRoute
   '/users/$userId': typeof UsersUserIdRoute
@@ -147,6 +163,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/papers': typeof PapersRoute
   '/abs/$paperId': typeof AbsPaperIdRoute
+  '/account/edit': typeof AccountEditRoute
   '/account/paper-list': typeof AccountPaperListRoute
   '/account/settings': typeof AccountSettingsRoute
   '/users/$userId': typeof UsersUserIdRoute
@@ -159,6 +176,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/papers'
     | '/abs/$paperId'
+    | '/account/edit'
     | '/account/paper-list'
     | '/account/settings'
     | '/users/$userId'
@@ -168,6 +186,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/papers'
     | '/abs/$paperId'
+    | '/account/edit'
     | '/account/paper-list'
     | '/account/settings'
     | '/users/$userId'
@@ -177,6 +196,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/papers'
     | '/abs/$paperId'
+    | '/account/edit'
     | '/account/paper-list'
     | '/account/settings'
     | '/users/$userId'
@@ -188,6 +208,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   PapersRoute: typeof PapersRoute
   AbsPaperIdRoute: typeof AbsPaperIdRoute
+  AccountEditRoute: typeof AccountEditRoute
   AccountPaperListRoute: typeof AccountPaperListRoute
   AccountSettingsRoute: typeof AccountSettingsRoute
   UsersUserIdRoute: typeof UsersUserIdRoute
@@ -198,6 +219,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   PapersRoute: PapersRoute,
   AbsPaperIdRoute: AbsPaperIdRoute,
+  AccountEditRoute: AccountEditRoute,
   AccountPaperListRoute: AccountPaperListRoute,
   AccountSettingsRoute: AccountSettingsRoute,
   UsersUserIdRoute: UsersUserIdRoute,
@@ -217,6 +239,7 @@ export const routeTree = rootRoute
         "/about",
         "/papers",
         "/abs/$paperId",
+        "/account/edit",
         "/account/paper-list",
         "/account/settings",
         "/users/$userId"
@@ -233,6 +256,9 @@ export const routeTree = rootRoute
     },
     "/abs/$paperId": {
       "filePath": "abs/$paperId.tsx"
+    },
+    "/account/edit": {
+      "filePath": "account/edit.tsx"
     },
     "/account/paper-list": {
       "filePath": "account/paper-list.tsx"
