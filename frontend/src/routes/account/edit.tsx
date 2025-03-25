@@ -1,11 +1,7 @@
 import { createFileRoute } from "@tanstack/solid-router";
-import { Link } from "@tanstack/solid-router";
+
 import { createEffect, onMount, onCleanup, createResource } from "solid-js";
-import type {
-  Paper,
-  Result_1,
-  User,
-} from "../../declarations/backend/backend.did";
+import type { Paper, Result_1 } from "../../declarations/backend/backend.did";
 import { matchResult } from "../../utils/result";
 import { Title } from "@solidjs/meta";
 import type { RouterContext } from "../__root";
@@ -13,8 +9,6 @@ import { createForm } from "@tanstack/solid-form";
 import type { AnyFieldApi } from "@tanstack/solid-form";
 import type { AuthStoreType } from "../../contexts/auth";
 import { pushAlert } from "../../contexts/alert";
-import { fromOption } from "../../utils/option";
-import { validateId, validateName } from "../../features/account";
 
 type EditSearch = {
   id: string;
