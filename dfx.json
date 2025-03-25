@@ -11,9 +11,9 @@
     "frontend": {
       "dependencies": ["backend"],
       "frontend": {
-        "entrypoint": "frontend/dist/index.html"
+        "entrypoint": "dist/index.html"
       },
-      "source": ["frontend/dist/assets"],
+      "source": ["dist"],
       "type": "assets"
     },
     "internet-identity": {
