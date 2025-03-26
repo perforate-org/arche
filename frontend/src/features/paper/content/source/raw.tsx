@@ -18,7 +18,7 @@ export function RawSource({ file }: RawSourceProps): JSXElement {
   createEffect(() => {
     if (file && file.content && file.content.length > 0) {
       try {
-        // バイナリデータからBlobを作成し、データURLに変換
+        // Create Blob from binary data and convert to data URL
         const blob = new Blob([new Uint8Array(file.content)], {
           type: "application/pdf",
         });
@@ -26,7 +26,7 @@ export function RawSource({ file }: RawSourceProps): JSXElement {
         setDataUrl(url);
         setLoading(false);
 
-        // コンポーネントがアンマウントされる際にURLをリリース
+        // Release URL when component is unmounted
         onCleanup(() => {
           if (url) URL.revokeObjectURL(url);
         });
