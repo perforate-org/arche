@@ -24,7 +24,7 @@ function App() {
         <p class="mb-8 font-serif text-xl">Decentralized Preprint Server</p>
         <div class="space-x-4">
           <Link to={"/papers"} class="btn btn-sm btn-primary">
-            Check Papers
+            Explore Papers
           </Link>
         </div>
       </div>
