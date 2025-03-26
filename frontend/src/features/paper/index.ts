@@ -1,2 +1,2 @@
-import { getContent } from "./content";
+import { getContent } from "./content.tsx";
 export { getContent };

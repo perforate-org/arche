@@ -2,45 +2,35 @@ use candid::CandidType;
 use serde::{Serialize, Deserialize};
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug, Default)]
-pub struct PaperContent {
-    pub content_format: ContentFormat,
-    pub content_source: ContentSource,
+pub struct PaperContents {
+    #[serde(default)]
+    pub text: Option<String>,
+    #[serde(default)]
+    pub pdf: Option<ContentFileSource>,
 }
 
-impl PaperContent {
-    pub fn new(content_format: ContentFormat, content_source: ContentSource) -> Self {
-        Self {
-            content_format,
-            content_source,
-        }
+impl PaperContents {
+    pub fn new(text: Option<String>, pdf: Option<ContentFileSource>) -> Self {
+        Self { text, pdf }
     }
-}
-
-#[derive(CandidType, Serialize, Deserialize, Clone, Copy, Debug, Default)]
-pub enum ContentFormat {
-    #[default]
-    Text,
-    Tex,
-    Latex,
-    Typst,
-    Satysfi,
-    Pdf,
-    Markdown,
-    Html,
 }
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
-pub enum ContentSource {
-    Raw(Vec<u8>),
+pub enum ContentFileSource {
+    Raw(RawFile),
     Http(String),
-    Arweave(String),
-    Ipfs(String),
 }
 
-impl Default for ContentSource {
+impl Default for ContentFileSource {
     fn default() -> Self {
-        ContentSource::Raw(Vec::new())
+        ContentFileSource::Raw(RawFile::default())
     }
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug, Default)]
+pub struct RawFile {
+    pub name: String,
+    pub content: Vec<u8>,
 }
 
 #[cfg(feature = "ic-stable")]
@@ -49,7 +39,7 @@ mod ic_stable {
     use ic_stable_structures::storable::{Bound, Storable};
     use std::borrow::Cow;
 
-    impl Storable for PaperContent {
+    impl Storable for PaperContents {
         fn to_bytes(&self) -> Cow<[u8]> {
             Cow::Owned(candid::encode_one(self).expect("Failed to encode PaperContent"))
         }

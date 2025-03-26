@@ -1,10 +1,21 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { redirect, Link, useRouter } from "@tanstack/solid-router";
-import { queryOptions, createQuery } from "@tanstack/solid-query";
+import {
+  queryOptions,
+  createQuery,
+  type QueryClient,
+} from "@tanstack/solid-query";
 import { pushAlert } from "../../contexts/alert";
 import { type AuthStoreType } from "../../contexts/auth";
 import type { Principal } from "@dfinity/principal";
-import { createEffect, onMount, onCleanup, createMemo, For } from "solid-js";
+import {
+  createEffect,
+  onMount,
+  onCleanup,
+  createMemo,
+  For,
+  createSignal,
+} from "solid-js";
 import type { User } from "../../declarations/backend/backend.did";
 import { matchResult } from "../../utils/result";
 import { Title } from "@solidjs/meta";
@@ -58,7 +69,13 @@ function RouteComponent() {
     <main class="flex min-h-screen flex-col items-center justify-center">
       {context().auth.isAuthenticated ? (
         matchResult(data()!, {
-          ok: (user) => <List user={user} auth={context().auth} />,
+          ok: (user) => (
+            <List
+              user={user}
+              auth={context().auth}
+              queryClient={context().queryClient}
+            />
+          ),
           err: (err) => (
             <>
               <Title>Error | Arche</Title>
@@ -74,8 +91,18 @@ function RouteComponent() {
   );
 }
 
-function List({ user, auth }: { user: User; auth: AuthStoreType }) {
+function List({
+  user,
+  auth,
+  queryClient,
+}: {
+  user: User;
+  auth: AuthStoreType;
+  queryClient: QueryClient;
+}) {
   let router = useRouter();
+  const [paperToDelete, setPaperToDelete] = createSignal<string | null>(null);
+  let modalRef: HTMLDialogElement | undefined;
 
   let listRef: HTMLElement | undefined;
   let listBorderRef: HTMLDivElement | undefined;
@@ -92,11 +119,41 @@ function List({ user, auth }: { user: User; auth: AuthStoreType }) {
 
   onCleanup(() => {
     window.removeEventListener("resize", updateHeight);
+    // Close modal if component unmounts
+    if (modalRef) modalRef.close();
   });
 
   createEffect(() => {
     updateHeight();
   });
+
+  async function deletePaper(paperId: string) {
+    let response = await auth.backend.delete_paper(paperId);
+    matchResult(response, {
+      ok: () => {
+        pushAlert({
+          type: "success",
+          message: "Paper deleted successfully",
+        });
+        // Deactivate and reacquire query after deleting papers
+        queryClient.invalidateQueries({
+          queryKey: ["account", "paperList"],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["paperList"],
+        });
+      },
+      err: (error) => {
+        pushAlert({
+          type: "error",
+          message: `Failed to delete paper: ${error}`,
+        });
+      },
+    });
+    // Close the modal after deletion attempt
+    if (modalRef) modalRef.close();
+    setPaperToDelete(null);
+  }
 
   return (
     <>
@@ -110,6 +167,38 @@ function List({ user, auth }: { user: User; auth: AuthStoreType }) {
           class="absolute mt-24 w-screen border-y-[0.5px] border-slate-300 dark:border-slate-700"
         ></div>
       </div>
+
+      {/* Confirmation Modal */}
+      <dialog ref={modalRef} class="modal">
+        <div class="modal-box">
+          <h3 class="text-lg font-bold">Confirm Deletion</h3>
+          <p class="py-4">
+            Are you sure you want to delete this paper? This action cannot be
+            undone.
+          </p>
+          <div class="modal-action">
+            <button
+              class="btn btn-outline"
+              onClick={() => {
+                if (modalRef) modalRef.close();
+                setPaperToDelete(null);
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              class="btn btn-error"
+              onClick={() => paperToDelete() && deletePaper(paperToDelete()!)}
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+          <button onClick={() => setPaperToDelete(null)}>close</button>
+        </form>
+      </dialog>
+
       <div class="mx-auto flex w-screen max-w-256 px-8 md:px-16">
         <div class="min-h-screen w-full border-x-[0.5px] border-slate-300 pt-12 pb-12 dark:border-slate-700">
           <div class="flex h-12 items-center justify-end px-2 md:px-4">
@@ -151,7 +240,13 @@ function List({ user, auth }: { user: User; auth: AuthStoreType }) {
                         >
                           Edit
                         </button>
-                        <button disabled class="btn btn-xs join-item">
+                        <button
+                          class="btn btn-xs join-item"
+                          onClick={() => {
+                            setPaperToDelete(paper.id);
+                            if (modalRef) modalRef.showModal();
+                          }}
+                        >
                           Delete
                         </button>
                       </div>

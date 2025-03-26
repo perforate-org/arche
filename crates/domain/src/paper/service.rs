@@ -1,7 +1,7 @@
 use crate::paper::{
     entity::model::Paper,
     repository::PaperRepository,
-    PaperId, PaperTitle, PaperCategory, PaperContent
+    PaperId,
 };
 
 use super::PaperSummary;
@@ -59,5 +59,14 @@ where
         let id = paper.id;
         let _ = self.repository.insert(id, paper);
         id
+    }
+
+    pub fn remove(&mut self, id: &PaperId) -> Result<(), String> {
+        if self.repository.contains(id) {
+            self.repository.remove(id);
+            Ok(())
+        } else {
+            Err("Paper not found".to_string())
+        }
     }
 }

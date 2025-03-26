@@ -138,4 +138,36 @@ where
         self.repository.update(primary_key, user)?;
         Ok(())
     }
+
+    pub fn remove_paper_as_lead_author(&mut self, primary_key: &R::PrimaryKey, paper_id: &PaperId) -> Result<(), UserServiceError> {
+        let mut user = self.repository.get_by_primary_key(primary_key)
+            .ok_or(UserServiceError::NotFound)?;
+
+        // Find and remove the paper from lead_authored_papers
+        let position = user.lead_authored_papers.iter().position(|id| id == paper_id);
+        if let Some(index) = position {
+            user.lead_authored_papers.remove(index);
+            self.repository.update(primary_key, user)?;
+            Ok(())
+        } else {
+            // Paper not found in user's authored papers
+            Err(UserServiceError::NotFound)
+        }
+    }
+
+    pub fn remove_paper_as_co_author(&mut self, primary_key: &R::PrimaryKey, paper_id: &PaperId) -> Result<(), UserServiceError> {
+        let mut user = self.repository.get_by_primary_key(primary_key)
+            .ok_or(UserServiceError::NotFound)?;
+
+        // Find and remove the paper from co_authored_papers
+        let position = user.co_authored_papers.iter().position(|id| id == paper_id);
+        if let Some(index) = position {
+            user.co_authored_papers.remove(index);
+            self.repository.update(primary_key, user)?;
+            Ok(())
+        } else {
+            // Paper not found in user's co-authored papers
+            Err(UserServiceError::NotFound)
+        }
+    }
 }

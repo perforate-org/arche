@@ -1,4 +1,4 @@
-use crate::{paper::{repository::PaperRepository, Citation, PaperCategory, PaperContent, PaperId, PaperStatus, PaperTitle}, user::UserPrimaryKey};
+use crate::{paper::{repository::PaperRepository, Citation, PaperCategory, PaperContents, PaperId, PaperStatus, PaperTitle}, user::UserPrimaryKey};
 use super::dao::{PaperDao, PaperDaoVersion, V1};
 use util::time::now;
 
@@ -15,7 +15,7 @@ pub struct Paper<K: UserPrimaryKey> {
     /// Abstract of the paper
     pub ab: String,
     /// Main content of the paper in Typst format
-    pub content: PaperContent,
+    pub content: PaperContents,
     /// Categories this paper belongs to
     pub categories: Vec<PaperCategory>,
     /// Tags for better searchability
@@ -49,7 +49,7 @@ impl<K: UserPrimaryKey> Paper<K> {
             co_authors: Vec::new(),
             title: PaperTitle::new("New Paper").unwrap(),
             ab: String::new(),
-            content: PaperContent::default(),
+            content: PaperContents::default(),
             categories: vec![],
             tags: vec![],
             status: PaperStatus::Draft,

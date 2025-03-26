@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use crate::{paper::{PaperCategory, PaperStatus, PaperTitle, Citation, PaperContent, PaperId}, user::{UserId, UserName}};
+use crate::{paper::{PaperCategory, PaperStatus, PaperTitle, Citation, PaperContents, PaperId}, user::{UserId, UserName}};
 use serde::Deserialize;
 #[cfg(feature = "entity")]
 use crate::{
@@ -21,7 +21,7 @@ pub struct Paper {
     /// Abstract of the paper
     pub ab: String,
     /// Main content of the paper
-    pub content: PaperContent,
+    pub content: PaperContents,
     /// Categories this paper belongs to
     pub categories: Vec<PaperCategory>,
     /// Tags for better searchability

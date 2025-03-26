@@ -5,7 +5,7 @@ use domain::{
     paper::{
         entity::model::Paper,
         repository::PaperRepository, PaperCategory,
-        value_object::{PaperId, PaperTitle, PaperContent, ContentFormat, ContentSource},
+        value_object::{PaperId, PaperTitle, PaperContents},
     },
     user::{
         entity::model::User,
@@ -36,9 +36,8 @@ pub(super) fn init() {
 
     let sample_title = PaperTitle::new("Lorem Ipsum").unwrap();
     let sample_category = PaperCategory::Blockchain;
-        let sample_content = PaperContent::new(
-            ContentFormat::Text,
-            ContentSource::Raw(
+        let sample_content = PaperContents::new(
+            Some(
                 r#"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent luctus ultrices felis, ut consequat dolor laoreet quis. Duis in lorem at velit condimentum elementum ut nec dolor. Nullam accumsan vehicula dolor, et maximus tortor ultricies quis. Quisque varius non augue ac sodales. Proin odio diam, gravida non libero nec, egestas facilisis enim. Nunc malesuada leo vel vestibulum euismod. Ut commodo vulputate lectus. Vivamus congue laoreet arcu vitae varius. Morbi et nulla quam. Cras semper ex at mauris auctor, vel consequat sapien rutrum. Interdum et malesuada fames ac ante ipsum primis in faucibus. Praesent varius varius mi id commodo. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
 
     Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Proin quam dolor, scelerisque quis arcu eu, laoreet interdum purus. In quis pellentesque ex. Donec pharetra aliquam interdum. Vestibulum vitae accumsan magna. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Nunc sollicitudin eget neque a egestas. Integer rutrum tristique leo at ornare. Morbi pretium nulla ut egestas porta.
@@ -49,7 +48,7 @@ pub(super) fn init() {
 
     Proin tempor metus eu vehicula hendrerit. Praesent tempus, velit quis egestas pharetra, dolor nulla varius lacus, in sodales diam sapien at sapien. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Duis bibendum velit risus, vel bibendum purus congue et. Suspendisse a felis porta, sagittis ligula ac, rhoncus lectus. Ut eget lectus quis leo malesuada iaculis. Phasellus porttitor sapien in ante ullamcorper malesuada. Sed ligula mi, posuere id lacinia ut, rhoncus vel ex. Donec vel nunc felis. Integer eu enim dolor. Nullam accumsan mauris nec eleifend eleifend. Proin condimentum arcu ex, quis porta elit tincidunt vel."#
                 .into()
-            )
+            ), None,
         );
     let mut sample_paper = Paper::new_draft(anonymous_principal, &mut paper_repo);
     sample_paper.title = sample_title;

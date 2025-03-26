@@ -10,7 +10,7 @@ pub mod version;
 
 pub use category::PaperCategory;
 pub use citation::Citation;
-pub use content::{PaperContent, ContentFormat, ContentSource};
+pub use content::{PaperContents, ContentFileSource};
 pub use id::{PaperId, PaperIdError};
 pub use status::PaperStatus;
 pub use summary::PaperSummary;

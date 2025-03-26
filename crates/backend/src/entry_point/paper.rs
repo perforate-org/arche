@@ -54,3 +54,10 @@ fn create_draft() -> String {
 
     controller.create_draft(caller().into()).unwrap()
 }
+
+#[update(guard = "caller_is_user")]
+fn delete_paper(paper_id: String) -> Result<(), String> {
+    let mut controller = controller();
+
+    controller.delete(caller().into(), &paper_id)
+}

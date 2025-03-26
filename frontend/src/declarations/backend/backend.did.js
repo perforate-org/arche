@@ -1,4 +1,5 @@
 export const idlFactory = ({ IDL }) => {
+  const Result = IDL.Variant({ 'Ok' : IDL.Null, 'Err' : IDL.Text });
   const PaperSummaryDto = IDL.Record({
     'id' : IDL.Text,
     'title' : IDL.Text,
@@ -12,7 +13,7 @@ export const idlFactory = ({ IDL }) => {
     'lead_authored_papers' : IDL.Vec(PaperIdTitle),
     'co_authored_papers' : IDL.Vec(PaperIdTitle),
   });
-  const Result = IDL.Variant({ 'Ok' : User, 'Err' : IDL.Text });
+  const Result_1 = IDL.Variant({ 'Ok' : User, 'Err' : IDL.Text });
   const PaperCategory = IDL.Variant({
     'MachineLearning' : IDL.Null,
     'SystemDesign' : IDL.Null,
@@ -38,25 +39,14 @@ export const idlFactory = ({ IDL }) => {
     'Paper' : PaperId,
     'Other' : IDL.Text,
   });
-  const ContentFormat = IDL.Variant({
-    'Pdf' : IDL.Null,
-    'Tex' : IDL.Null,
-    'Latex' : IDL.Null,
-    'Html' : IDL.Null,
-    'Text' : IDL.Null,
-    'Satysfi' : IDL.Null,
-    'Markdown' : IDL.Null,
-    'Typst' : IDL.Null,
+  const RawFile = IDL.Record({
+    'content' : IDL.Vec(IDL.Nat8),
+    'name' : IDL.Text,
   });
-  const ContentSource = IDL.Variant({
-    'Raw' : IDL.Vec(IDL.Nat8),
-    'Http' : IDL.Text,
-    'Ipfs' : IDL.Text,
-    'Arweave' : IDL.Text,
-  });
-  const PaperContent = IDL.Record({
-    'content_format' : ContentFormat,
-    'content_source' : ContentSource,
+  const ContentFileSource = IDL.Variant({ 'Raw' : RawFile, 'Http' : IDL.Text });
+  const PaperContents = IDL.Record({
+    'pdf' : IDL.Opt(ContentFileSource),
+    'text' : IDL.Opt(IDL.Text),
   });
   const Paper = IDL.Record({
     'ab' : IDL.Text,
@@ -66,7 +56,7 @@ export const idlFactory = ({ IDL }) => {
     'title' : IDL.Text,
     'updated_at' : IDL.Nat64,
     'references' : IDL.Vec(Citation),
-    'content' : PaperContent,
+    'content' : PaperContents,
     'cover_image' : IDL.Opt(IDL.Text),
     'tags' : IDL.Vec(IDL.Text),
     'lead_author' : IDL.Tuple(IDL.Text, IDL.Text),
@@ -74,24 +64,24 @@ export const idlFactory = ({ IDL }) => {
     'co_authors' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text)),
     'citations' : IDL.Vec(Citation),
   });
-  const Result_1 = IDL.Variant({ 'Ok' : Paper, 'Err' : IDL.Text });
-  const Result_2 = IDL.Variant({ 'Ok' : IDL.Null, 'Err' : IDL.Text });
+  const Result_2 = IDL.Variant({ 'Ok' : Paper, 'Err' : IDL.Text });
   const Result_3 = IDL.Variant({ 'Ok' : IDL.Bool, 'Err' : IDL.Text });
   return IDL.Service({
     'create_draft' : IDL.Func([], [IDL.Text], []),
+    'delete_paper' : IDL.Func([IDL.Text], [Result], []),
     'fetch_all_paper_summaries' : IDL.Func(
         [],
         [IDL.Vec(PaperSummaryDto)],
         ['query'],
       ),
-    'fetch_caller' : IDL.Func([], [Result], ['query']),
-    'fetch_paper' : IDL.Func([IDL.Text], [Result_1], ['query']),
-    'fetch_paper_as_author' : IDL.Func([IDL.Text], [Result_1], ['query']),
-    'fetch_user' : IDL.Func([IDL.Text], [Result], ['query']),
+    'fetch_caller' : IDL.Func([], [Result_1], ['query']),
+    'fetch_paper' : IDL.Func([IDL.Text], [Result_2], ['query']),
+    'fetch_paper_as_author' : IDL.Func([IDL.Text], [Result_2], ['query']),
+    'fetch_user' : IDL.Func([IDL.Text], [Result_1], ['query']),
     'is_registered' : IDL.Func([], [IDL.Bool], ['query']),
-    'register_user' : IDL.Func([], [Result_2], []),
-    'update_caller' : IDL.Func([User], [Result_2], []),
-    'update_paper' : IDL.Func([Paper], [Result_2], []),
+    'register_user' : IDL.Func([], [Result], []),
+    'update_caller' : IDL.Func([User], [Result], []),
+    'update_paper' : IDL.Func([Paper], [Result], []),
     'user_exists_by_id' : IDL.Func([IDL.Text], [Result_3], ['query']),
   });
 };

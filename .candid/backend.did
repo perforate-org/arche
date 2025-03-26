@@ -1,20 +1,5 @@
 type Citation = variant { Url : text; Paper : PaperId; Other : text };
-type ContentFormat = variant {
-  Pdf;
-  Tex;
-  Latex;
-  Html;
-  Text;
-  Satysfi;
-  Markdown;
-  Typst;
-};
-type ContentSource = variant {
-  Raw : blob;
-  Http : text;
-  Ipfs : text;
-  Arweave : text;
-};
+type ContentFileSource = variant { Raw : RawFile; Http : text };
 type Paper = record {
   ab : text;
   id : text;
@@ -23,7 +8,7 @@ type Paper = record {
   title : text;
   updated_at : nat64;
   references : vec Citation;
-  content : PaperContent;
+  content : PaperContents;
   cover_image : opt text;
   tags : vec text;
   lead_author : record { text; text };
@@ -40,10 +25,7 @@ type PaperCategory = variant {
   Programming;
   Other : text;
 };
-type PaperContent = record {
-  content_format : ContentFormat;
-  content_source : ContentSource;
-};
+type PaperContents = record { pdf : opt ContentFileSource; "text" : opt text };
 type PaperId = record { version : nat16; number : nat32; months : nat16 };
 type PaperIdTitle = record { id : text; title : text };
 type PaperStatus = variant { UnderReview; Draft; Archived; Published };
@@ -53,9 +35,10 @@ type PaperSummaryDto = record {
   lead_author_name : text;
   lead_author_id : text;
 };
-type Result = variant { Ok : User; Err : text };
-type Result_1 = variant { Ok : Paper; Err : text };
-type Result_2 = variant { Ok; Err : text };
+type RawFile = record { content : blob; name : text };
+type Result = variant { Ok; Err : text };
+type Result_1 = variant { Ok : User; Err : text };
+type Result_2 = variant { Ok : Paper; Err : text };
 type Result_3 = variant { Ok : bool; Err : text };
 type User = record {
   id : opt text;
@@ -65,14 +48,15 @@ type User = record {
 };
 service : {
   create_draft : () -> (text);
+  delete_paper : (text) -> (Result);
   fetch_all_paper_summaries : () -> (vec PaperSummaryDto) query;
-  fetch_caller : () -> (Result) query;
-  fetch_paper : (text) -> (Result_1) query;
-  fetch_paper_as_author : (text) -> (Result_1) query;
-  fetch_user : (text) -> (Result) query;
+  fetch_caller : () -> (Result_1) query;
+  fetch_paper : (text) -> (Result_2) query;
+  fetch_paper_as_author : (text) -> (Result_2) query;
+  fetch_user : (text) -> (Result_1) query;
   is_registered : () -> (bool) query;
-  register_user : () -> (Result_2);
-  update_caller : (User) -> (Result_2);
-  update_paper : (Paper) -> (Result_2);
+  register_user : () -> (Result);
+  update_caller : (User) -> (Result);
+  update_paper : (Paper) -> (Result);
   user_exists_by_id : (text) -> (Result_3) query;
 }
