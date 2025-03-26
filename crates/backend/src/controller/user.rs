@@ -27,20 +27,13 @@ where
     }
 
     pub fn fetch(&self, user_id: &str) -> Result<dto::User, String> {
-        // ユーザーモデルを取得
         let user = self.use_case.get_user(user_id)?;
-
-        // DTOに変換して返す
         Ok(dto::User::from_model(user, self.use_case.get_paper_repository()))
     }
 
     pub fn fetch_caller(&self) -> Result<dto::User, String> {
         let caller_principal: UserPrincipal = caller().into();
-
-        // 呼び出し元のユーザーモデルを取得
         let user = self.use_case.get_user_by_principal(caller_principal)?;
-
-        // DTOに変換して返す
         Ok(dto::User::from_model(user, self.use_case.get_paper_repository()))
     }
 
@@ -59,11 +52,7 @@ where
 
     pub fn update_caller(&mut self, user_dto: dto::User) -> Result<(), String> {
         let caller_principal: UserPrincipal = caller().into();
-
-        // DTOからモデルに変換
         let user_model = user_dto.into();
-
-        // ユーザーモデルを更新
         self.use_case.update_user(caller_principal, user_model)
     }
 }
