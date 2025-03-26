@@ -22,11 +22,11 @@ The project follows Clean Architecture principles with distinct layers (see [det
 ├───────────────────┤
 │   Entry Points    │   API endpoints and guards
 ├───────────────────┤
-│   Controllers     │   Request/response handling
+│    Controllers    │   Request/response handling
 ├───────────────────┤
-│    Use Cases      │   Application business logic
+│     Use Cases     │   Application business logic
 ├───────────────────┤
-│     Domain        │   Core business logic and entities
+│      Domain       │   Core business logic and entities
 ├───────────────────┤
 │  Infrastructure   │   Data persistence and external services
 └───────────────────┘
