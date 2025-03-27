@@ -85,18 +85,24 @@ thread_local! {
 fn pre_upgrade() {
     use crate::log;
 
-    // Save USER_PRINCIPALS, USER_IDS, and PAPER_COUNTER to stable storage.
+    // Save USER_PRINCIPALS, USER_IDS, PAPER_COUNTER, PAPER_TITLES, and PAPER_LEAD_AUTHORS to stable storage.
     let save_result = PAPER_COUNTER.with_borrow(|paper_counter| {
         USER_EXISTENCE.with_borrow(|user_existence| {
             USER_PRINCIPALS.with_borrow(|user_principals| {
                 USER_IDS.with_borrow(|user_ids| {
-                    // Save all three structures in a tuple
-                    ic_cdk::storage::stable_save((
-                        *paper_counter.lock().unwrap(),
-                        user_existence.clone(),
-                        user_principals.clone(),
-                        user_ids.clone()
-                    ))
+                    PAPER_TITLES.with_borrow(|paper_titles| {
+                        PAPER_LEAD_AUTHORS.with_borrow(|paper_lead_authors| {
+                            // Save all structures in a tuple
+                            ic_cdk::storage::stable_save((
+                                *paper_counter.lock().unwrap(),
+                                user_existence.clone(),
+                                user_principals.clone(),
+                                user_ids.clone(),
+                                paper_titles.clone(),
+                                paper_lead_authors.clone()
+                            ))
+                        })
+                    })
                 })
             })
         })
@@ -105,7 +111,7 @@ fn pre_upgrade() {
     // Handle error gracefully, avoiding unwrap()
     match save_result {
         Ok(_) => {
-            ic_cdk::print("Successfully saved PAPER_COUNTER, USER_EXISTENCE, USER_PRINCIPALS, and USER_IDS to stable storage");
+            ic_cdk::print("Successfully saved PAPER_COUNTER, USER_EXISTENCE, USER_PRINCIPALS, USER_IDS, PAPER_TITLES, and PAPER_LEAD_AUTHORS to stable storage");
         },
         Err(e) => {
             ic_cdk::print(format!("Failed to save data to stable storage: {:?}", e));
@@ -126,12 +132,12 @@ fn post_upgrade() {
 
     // Load both USER_PRINCIPALS and USER_IDS maps from stable storage.
     let restore_result = ic_cdk::storage::stable_restore::<
-        (PaperCounter, HashSet<UserPrincipal>, HashMap<UserId, UserPrincipal>, HashMap<UserPrincipal, UserId>)
+        (PaperCounter, HashSet<UserPrincipal>, HashMap<UserId, UserPrincipal>, HashMap<UserPrincipal, UserId>, HashMap<PaperId, PaperTitle>, BTreeMap<PaperId, UserPrincipal>)
     >();
 
     // Handle error gracefully, avoiding unwrap()
     match restore_result {
-        Ok((old_paper_counter, old_user_existence, old_user_principals, old_user_ids)) => {
+        Ok((old_paper_counter, old_user_existence, old_user_principals, old_user_ids, old_paper_titles, old_lead_authors)) => {
             // Restore PAPER_COUNTER
             PAPER_COUNTER.with_borrow_mut(|counter| {
                 *counter = Mutex::new(old_paper_counter);
@@ -152,7 +158,17 @@ fn post_upgrade() {
                 *map = old_user_ids;
             });
 
-            ic_cdk::print("Successfully restored PAPER_COUNTER, USER_EXISTENCE, USER_PRINCIPALS, and USER_IDS from stable storage");
+            // Restore PAPER_TITLES
+            PAPER_TITLES.with_borrow_mut(|map| {
+                *map = old_paper_titles;
+            });
+
+            // Restore LEAD_AUTHORS
+            PAPER_LEAD_AUTHORS.with_borrow_mut(|map| {
+                *map = old_lead_authors;
+            });
+
+            ic_cdk::print("Successfully restored PAPER_COUNTER, USER_EXISTENCE, USER_PRINCIPALS, USER_IDS, PAPER_TITLES, and PAPER_LEAD_AUTHORS from stable storage");
         },
         Err(e) => {
             ic_cdk::print(format!("Failed to restore data from stable storage: {:?}", e));
@@ -167,6 +183,14 @@ fn post_upgrade() {
             });
 
             USER_EXISTENCE.with_borrow_mut(|map| {
+                map.clear();
+            });
+
+            PAPER_TITLES.with_borrow_mut(|map| {
+                map.clear();
+            });
+
+            PAPER_LEAD_AUTHORS.with_borrow_mut(|map| {
                 map.clear();
             });
 
@@ -216,7 +240,29 @@ fn post_upgrade() {
                 });
             });
 
-            ic_cdk::print("Restored PAPER_COUNTER, USER_EXISTENCE, USER_PRINCIPALS, and USER_IDS from backups");
+            // Repopulate PAPER_TITLES from backup if available
+            PAPERS.with_borrow(|backup| {
+                PAPER_TITLES.with_borrow_mut(|map| {
+                    for (paper_id, paper) in backup.iter() {
+                        let model = domain::paper::entity::model::Paper::from_dao(paper, paper_id);
+                        let title = model.title;
+                        map.insert(paper_id, title);
+                    }
+                });
+            });
+
+            // Repopulate PAPER_LEAD_AUTHORS from backup if available
+            PAPERS.with_borrow(|backup| {
+                PAPER_LEAD_AUTHORS.with_borrow_mut(|map| {
+                    for (paper_id, paper) in backup.iter() {
+                        let model = domain::paper::entity::model::Paper::from_dao(paper, paper_id);
+                        let lead_author = model.lead_author;
+                        map.insert(paper_id, lead_author);
+                    }
+                });
+            });
+
+            ic_cdk::print("Restored PAPER_COUNTER, USER_EXISTENCE, USER_PRINCIPALS, USER_IDS, PAPER_TITLES, PAPER_LEAD_AUTHORS from backups");
         }
     }
 }
