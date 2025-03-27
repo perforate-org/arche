@@ -33,7 +33,7 @@ pub struct State {
     user_ids: HashMap<UserPrincipal, UserId>,
     user_names: HashMap<UserPrincipal, UserName>,
     paper_counter: Mutex<PaperCounter>,
-    paper_titles: HashMap<PaperId, PaperTitle>,
+    paper_titles: BTreeMap<PaperId, PaperTitle>,
     paper_lead_authors: BTreeMap<PaperId, UserPrincipal>,
     #[serde(skip, default = "init_stable_log")]
     pub log: StableLog<Log, Memory, Memory>,
@@ -51,7 +51,7 @@ impl Default for State {
             user_ids: HashMap::new(),
             user_names: HashMap::new(),
             paper_counter: Mutex::new(PaperCounter::default()),
-            paper_titles: HashMap::new(),
+            paper_titles: BTreeMap::new(),
             paper_lead_authors: BTreeMap::new(),
             log: init_stable_log(),
             users: init_users(),
