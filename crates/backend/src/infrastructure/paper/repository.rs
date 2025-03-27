@@ -54,15 +54,19 @@ impl PaperRepository for StablePaperRepository {
     }
 
     fn insert(&mut self, paper_id: PaperId, paper: Paper<UserPrincipal>) -> Option<Paper<UserPrincipal>> {
-        STATE.with_borrow_mut(|s| s.paper_titles.insert(paper_id, paper.title.clone()));
-        STATE.with_borrow_mut(|s| s.paper_lead_authors.insert(paper_id, paper.lead_author));
-        STATE.with_borrow_mut(|s| s.papers.insert(paper_id, paper.into())).map(|a| Paper::from_dao(a, paper_id))
+        STATE.with_borrow_mut(|s| {
+            s.paper_titles.insert(paper_id, paper.title.clone());
+            s.paper_lead_authors.insert(paper_id, paper.lead_author);
+            s.papers.insert(paper_id, paper.into()).map(|a| Paper::from_dao(a, paper_id))
+        })
     }
 
     fn remove(&mut self, paper_id: &PaperId) -> Option<Paper<UserPrincipal>> {
-        STATE.with_borrow_mut(|s| s.paper_titles.remove(paper_id));
-        STATE.with_borrow_mut(|s| s.paper_lead_authors.remove(paper_id));
-        STATE.with_borrow_mut(|s| s.papers.remove(paper_id)).map(|a| Paper::from_dao(a, *paper_id))
+        STATE.with_borrow_mut(|s| {
+            s.paper_titles.remove(paper_id);
+            s.paper_lead_authors.remove(paper_id);
+            s.papers.remove(paper_id).map(|a| Paper::from_dao(a, *paper_id))
+        })
     }
 
     fn generate_id(&mut self) -> PaperId {
