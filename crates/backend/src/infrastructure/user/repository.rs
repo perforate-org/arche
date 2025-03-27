@@ -1,4 +1,4 @@
-use crate::infrastructure::{USERS, USER_EXISTENCE, USER_IDS, USER_IDS_BACKUP, USER_PRINCIPALS, USER_PRINCIPALS_BACKUP, USER_NAMES};
+use crate::infrastructure::STATE;
 use domain::user::{
     entity::model::User, value_object::{UserId, UserPrimaryKey, UserPrincipal},
 };
@@ -22,11 +22,11 @@ impl UserRepository for StableUserRepository {
 
     fn get(&self, user_id: &UserId) -> Option<User> {
         let primary_key = self.get_primary_key(user_id)?;
-        USERS.with_borrow(|map| map.get(&primary_key.as_principal())).map(|u| User::from_dao_with_id(u, Some(*user_id)))
+        STATE.with_borrow(|s| s.users.get(&primary_key.as_principal())).map(|u| User::from_dao_with_id(u, Some(*user_id)))
     }
 
     fn get_by_primary_key(&self, primary_key: &UserPrincipal) -> Option<User> {
-        USERS.with_borrow(|map| map.get(&primary_key.as_principal())).map(|u| User::from_dao(u, primary_key, self))
+        STATE.with_borrow(|s| s.users.get(&primary_key.as_principal())).map(|u| User::from_dao(u, primary_key, self))
     }
 
     fn get_name(&self, user_id: &UserId) -> Option<domain::UserName> {
@@ -35,23 +35,23 @@ impl UserRepository for StableUserRepository {
     }
 
     fn get_name_by_primary_key(&self, primary_key: &Self::PrimaryKey) -> Option<domain::UserName> {
-        USER_NAMES.with_borrow(|map| map.get(primary_key).cloned())
+        STATE.with_borrow(|s| s.user_names.get(primary_key).cloned())
     }
 
     fn contains(&self, primary_key: &UserPrincipal) -> bool {
-        USER_EXISTENCE.with_borrow(|map| map.contains(&primary_key.as_principal()))
+        STATE.with_borrow(|s| s.user_existence.contains(&primary_key.as_principal()))
     }
 
     fn contains_id(&self, user_id: &UserId) -> bool {
-        USER_PRINCIPALS.with_borrow(|map| map.contains_key(user_id))
+        STATE.with_borrow(|s| s.user_principals.contains_key(user_id))
     }
 
     fn get_primary_key(&self, user_id: &UserId) -> Option<UserPrincipal> {
-        USER_PRINCIPALS.with_borrow(|map| map.get(user_id).copied())
+        STATE.with_borrow(|s| s.user_principals.get(user_id).copied())
     }
 
     fn get_user_id(&self, primary_key: &UserPrincipal) -> Option<UserId> {
-        USER_IDS.with_borrow(|map| map.get(&primary_key.as_principal()).copied())
+        STATE.with_borrow(|s| s.user_ids.get(&primary_key.as_principal()).copied())
     }
 
     fn add(&mut self, primary_key: UserPrincipal, user: User) -> Result<(), UserRepositoryError> {
@@ -61,9 +61,11 @@ impl UserRepository for StableUserRepository {
             return Err(UserRepositoryError::PrimaryKeyAlreadyExists);
         }
 
-        USER_NAMES.with_borrow_mut(|names| names.insert(principal, user.name.clone()));
-        USERS.with_borrow_mut(|map| map.insert(principal, user.into()));
-        USER_EXISTENCE.with_borrow_mut(|set| set.insert(principal));
+        STATE.with_borrow_mut(|s| {
+            s.user_names.insert(principal, user.name.clone());
+            s.users.insert(principal, user.into());
+            s.user_existence.insert(principal);
+        });
 
         Ok(())
     }
@@ -74,15 +76,18 @@ impl UserRepository for StableUserRepository {
         }
 
         self.update_id(primary_key, user.id)?;
-        USER_NAMES.with_borrow_mut(|names| names.insert(primary_key.as_principal(), user.name.clone()));
-        USERS.with_borrow_mut(|map| map.insert(primary_key.as_principal(), user.into()));
+
+        STATE.with_borrow_mut(|s| {
+            s.user_names.insert(primary_key.as_principal(), user.name.clone());
+            s.users.insert(primary_key.as_principal(), user.into());
+        });
 
         Ok(())
     }
 
     fn update_id(&mut self, primary_key: &UserPrincipal, new_id: Option<UserId>) -> Result<(), UserRepositoryError> {
         let principal = primary_key.as_principal();
-        let old_id = USER_IDS.with_borrow(|map| map.get(&principal).copied());
+        let old_id = self.get_user_id(primary_key);
 
         // Early return if IDs are the same
         if new_id == old_id {
@@ -92,23 +97,22 @@ impl UserRepository for StableUserRepository {
         match new_id {
             Some(new_id) => {
                 // Check if new ID already exists
-                if USER_PRINCIPALS.with_borrow(|map| map.contains_key(&new_id)) {
+                if STATE.with_borrow(|s| s.user_principals.contains_key(&new_id)) {
                     return Err(UserRepositoryError::IdAlreadyExists);
                 }
 
                 // Update both primary and backup mappings atomically
                 let update_mappings = || {
-                    // Add new mappings
-                    USER_PRINCIPALS.with_borrow_mut(|map| map.insert(new_id, principal));
-                    USER_PRINCIPALS_BACKUP.with_borrow_mut(|map| map.insert(new_id, principal));
-                    USER_IDS.with_borrow_mut(|map| map.insert(principal, new_id));
-                    USER_IDS_BACKUP.with_borrow_mut(|map| map.insert(principal, new_id));
+                    STATE.with_borrow_mut(|s| {
+                        // Add new mappings
+                        s.user_principals.insert(new_id, principal);
+                        s.user_ids.insert(principal, new_id);
 
-                    // Remove old ID if it exists
-                    if let Some(old_id) = old_id {
-                        USER_PRINCIPALS.with_borrow_mut(|map| map.remove(&old_id));
-                        USER_PRINCIPALS_BACKUP.with_borrow_mut(|map| map.remove(&old_id));
-                    }
+                        // Remove old ID if it exists
+                        if let Some(old_id) = old_id {
+                            s.user_principals.remove(&old_id);
+                        }
+                    });
                 };
 
                 update_mappings();
@@ -117,10 +121,10 @@ impl UserRepository for StableUserRepository {
                 if let Some(old_id) = old_id {
                     // Remove all mappings atomically when clearing ID
                     let clear_mappings = || {
-                        USER_PRINCIPALS.with_borrow_mut(|map| map.remove(&old_id));
-                        USER_PRINCIPALS_BACKUP.with_borrow_mut(|map| map.remove(&old_id));
-                        USER_IDS.with_borrow_mut(|map| map.remove(&principal));
-                        USER_IDS_BACKUP.with_borrow_mut(|map| map.remove(&principal));
+                        STATE.with_borrow_mut(|s| {
+                            s.user_principals.remove(&old_id);
+                            s.user_ids.remove(&principal);
+                        });
                     };
 
                     clear_mappings();
@@ -134,18 +138,18 @@ impl UserRepository for StableUserRepository {
     fn remove(&mut self, primary_key: &UserPrincipal) -> Result<User, UserRepositoryError> {
         let principal = primary_key.as_principal();
 
-        USER_EXISTENCE.with_borrow_mut(|map| map.remove(&principal));
+        STATE.with_borrow_mut(|s| {
+            s.user_existence.remove(&principal);
+            let id = s.user_ids.remove(&principal);
 
-        let id = USER_IDS.with_borrow_mut(|map| map.remove(&principal));
-        USER_IDS_BACKUP.with_borrow_mut(|map| map.remove(&principal));
+            if let Some(id) = id {
+                s.user_principals.remove(&id).ok_or(UserRepositoryError::NotFound)?;
+            }
 
-        if let Some(id) = id {
-            USER_PRINCIPALS.with_borrow_mut(|map| map.remove(&id)).ok_or(UserRepositoryError::NotFound)?;
-            USER_PRINCIPALS_BACKUP.with_borrow_mut(|map| map.remove(&id)).ok_or(UserRepositoryError::NotFound)?;
-        }
-        USER_NAMES.with_borrow_mut(|names| names.remove(&principal));
-        USERS.with_borrow_mut(|map| map.remove(&principal).ok_or(UserRepositoryError::NotFound)).map(|u| {
-            User::from_dao_with_id(u, id)
+            s.user_names.remove(&principal);
+            s.users.remove(&principal).ok_or(UserRepositoryError::NotFound).map(|u| {
+                User::from_dao_with_id(u, id)
+            })
         })
     }
 }

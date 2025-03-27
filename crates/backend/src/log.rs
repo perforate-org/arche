@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use crate::infrastructure::LOG;
+use crate::infrastructure::STATE;
 use candid::{CandidType, Decode, Deserialize, Encode, Principal};
 use ic_cdk::api::print;
 use ic_stable_structures::storable::{Bound, Storable};
@@ -23,9 +23,8 @@ use std::borrow::Cow;
 /// }
 /// ```
 pub fn append(log: &Log) -> Result<u64, ()> {
-    LOG.with(|log_ref| {
-        let logs = log_ref.borrow_mut();
-        match logs.append(log) {
+    STATE.with_borrow_mut(|state| {
+        match state.log.append(log) {
             Ok(idx) => Ok(idx),
             Err(e) => {
                 print(format!("Error appending log: {:?}", e));
